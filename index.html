@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kelingkong 2026</title>
+<style>
+/* Designed to be read outdoors on a phone, in September daylight, by someone who is
+   walking. High contrast, large hit targets, no thin grey text. The property-card motif
+   (side color bands, serif landmark names, deed stamp) is layered on top of that base —
+   it must never win against legibility, which is why it stays a border/accent, not a fill. */
+:root{
+  --bg:#fff; --ink:#111; --dim:#5a5a5a; --line:#d8d8d8;
+  --accent:#0b57d0; --good:#0f7b3d; --warn:#8a5300; --bad:#b3261e;
+  --card:#fff; --chip:#f1f3f5;
+  --side-hk:#0f6f66; --side-kln:#b1550c; --side-ek:#7c3aed;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  padding-bottom:78px;
+}
+header{
+  position:sticky; top:0; z-index:20; background:var(--bg);
+  border-bottom:1px solid var(--line); padding:10px 14px 8px;
+}
+.hrow{display:flex; align-items:baseline; justify-content:space-between; gap:8px}
+h1{font-size:17px; margin:0; letter-spacing:-.2px}
+.money{font-size:20px; font-weight:700; font-variant-numeric:tabular-nums}
+.sub{color:var(--dim); font-size:12.5px; margin-top:2px}
+.stale{background:#fff4d6; color:var(--warn); font-size:12.5px;
+  padding:6px 14px; border-bottom:1px solid #f0dfae}
+main{padding:12px 14px}
+.search{width:100%; padding:11px 12px; font-size:16px; border:1px solid var(--line);
+  border-radius:10px; margin-bottom:12px; background:#fafafa}
+.grp{margin-bottom:4px}
+.dist{margin:18px 0 7px; font-size:12px; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--dim); display:flex; justify-content:space-between;
+  align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; gap:8px}
+.dist .lead{display:flex; align-items:center; gap:6px; min-width:0}
+.dist .arrow{color:var(--dim); font-size:10px; flex:none}
+.dist .dot{display:inline-block; width:9px; height:9px; border-radius:50%; flex:none}
+.dist .dot.hk{background:var(--side-hk)} .dist .dot.kln{background:var(--side-kln)}
+.dist .dot.ek{background:var(--side-ek)}
+.dist .txt{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.grp.collapsed .cards{display:none}
+.card{border:1px solid var(--line); border-radius:12px; padding:11px 12px; margin-bottom:9px;
+  background:var(--card); position:relative; border-top:4px solid transparent}
+.card.hk{border-top-color:var(--side-hk)}
+.card.kln{border-top-color:var(--side-kln)}
+.card.ek{border-top-color:var(--side-ek)}
+.card.mine{border-color:var(--good); background:#f4fbf6}
+.card.deed{box-shadow:inset 0 0 0 1px rgba(0,0,0,.04); padding-top:15px}
+.card.deed::after{content:"MILIK"; position:absolute; top:-9px; right:14px; font-size:10px;
+  font-weight:800; letter-spacing:.06em; color:var(--good); border:1px solid var(--good);
+  border-radius:6px; padding:1px 6px; transform:rotate(3deg); background:var(--card);
+  box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px}
+.nm{font-family:Georgia,"Times New Roman",serif; font-weight:700; line-height:1.25}
+.pr{font-weight:750; font-variant-numeric:tabular-nums; white-space:nowrap; font-size:17px}
+.meta{color:var(--dim); font-size:12.5px; margin-top:3px}
+.tag{display:inline-block; background:var(--chip); border-radius:999px; padding:1px 8px;
+  font-size:11.5px; margin-right:5px}
+.tag.own{background:#dcf0e2; color:var(--good); font-weight:650}
+.btns{display:flex; gap:8px; margin-top:10px}
+button{font:inherit; border-radius:10px; border:1px solid var(--line); background:#fff;
+  padding:10px 14px; font-weight:650; cursor:pointer; color:var(--ink)}
+button:active{transform:translateY(1px)}
+button[disabled]{opacity:.5; cursor:default}
+button.done{background:#dcf0e2; border-color:#a9d9ba; color:var(--good); opacity:1}
+.b-buy{background:var(--accent); color:#fff; border-color:var(--accent); flex:1}
+.b-task{flex:1}
+nav{position:fixed; bottom:0; left:0; right:0; display:flex; background:var(--bg);
+  border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1; border:0; border-radius:0; padding:13px 4px 15px; font-size:13px;
+  color:var(--dim); font-weight:600; background:none}
+nav button.on{color:var(--accent); box-shadow:inset 0 -3px 0 var(--accent)}
+.stat{display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin-bottom:14px}
+.stat div{border:1px solid var(--line); border-radius:12px; padding:10px 12px}
+.stat b{display:block; font-size:23px; font-variant-numeric:tabular-nums; line-height:1.15}
+.stat span{color:var(--dim); font-size:12.5px}
+.hint{border:1px solid #b9d4f6; background:#eff5fe; border-radius:12px; padding:11px 12px;
+  margin-bottom:14px; font-size:14.5px}
+.hint b{color:var(--accent)}
+.note{border:1px solid #f0dfae; background:#fff9ec; border-radius:12px; padding:11px 12px;
+  margin-bottom:14px; font-size:14.5px}
+ol.rank{list-style:none; padding:0; margin:0}
+ol.rank li{display:flex; gap:11px; align-items:center; padding:11px 4px;
+  border-bottom:1px solid var(--line)}
+ol.rank li.me{background:#eff5fe; font-weight:700; border-radius:8px; padding-left:9px}
+.pos{width:26px; text-align:right; color:var(--dim); font-variant-numeric:tabular-nums}
+.grow{flex:1}
+.sc{font-variant-numeric:tabular-nums; font-weight:700}
+dialog{border:0; border-radius:16px; padding:0; width:min(440px,94vw);
+  box-shadow:0 12px 40px rgba(0,0,0,.28)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dlg{padding:17px}
+.dlg h2{margin:0 0 3px; font-size:18px; font-family:Georgia,"Times New Roman",serif}
+.dlg .why{color:var(--dim); font-size:13.5px; margin-bottom:13px}
+.shot{width:100%; padding:24px 12px; border:2px dashed var(--line); border-radius:12px;
+  background:#fafafa; text-align:center; color:var(--dim); font-weight:600; margin-bottom:12px}
+.shot img{max-width:100%; border-radius:9px; display:block}
+.res{padding:11px 12px; border-radius:10px; margin-bottom:12px; font-weight:600}
+.res.ok{background:#e8f6ec; color:var(--good)}
+.res.no{background:#fdeceb; color:var(--bad)}
+.spin{display:inline-block; width:14px; height:14px; border:2px solid #fff6;
+  border-top-color:#fff; border-radius:50%; animation:s .7s linear infinite;
+  vertical-align:-2px; margin-right:7px}
+@keyframes s{to{transform:rotate(360deg)}}
+.objs{display:flex; flex-wrap:wrap; gap:8px}
+.objs button{flex:1 1 44%}
+.misibox{background:#fdeceb; border-bottom:1px solid var(--bad); padding:10px 14px 12px}
+.misi-h{font-weight:800; letter-spacing:.03em; color:var(--bad); font-size:13px}
+.misi-txt{margin:4px 0 8px; font-size:14.5px}
+.misi-row{display:flex; align-items:center; gap:10px}
+.misi-time{font-variant-numeric:tabular-nums; font-weight:800; font-size:20px;
+  color:var(--bad); min-width:52px}
+.misi-row .b-buy{flex:1; background:var(--bad); border-color:var(--bad)}
+.misi-row .b-buy:disabled{background:var(--chip); border-color:var(--line); color:var(--dim)}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#131314; --ink:#e8e8e8; --dim:#a0a0a0; --line:#3a3a3c; --card:#1c1c1e;
+        --chip:#2a2a2c; --accent:#8ab4f8; --good:#7ee2a8; --warn:#e5c07b; --bad:#f28b82;
+        --side-hk:#37b6a4; --side-kln:#e08a3c; --side-ek:#b794f6}
+  .card.mine{background:#16241a}
+  .search{background:#1c1c1e; color:var(--ink)}
+  button{background:#1c1c1e}
+  .b-buy{background:var(--accent); color:#0b1a33}
+  button.done{background:#16281c; border-color:#2f5a3c}
+  .hint{background:#16233a; border-color:#2b4a7a}
+  .note{background:#2a2213; border-color:#5a4a22}
+  ol.rank li.me{background:#16233a}
+  .res.ok{background:#16281c} .res.no{background:#2c1614}
+  dialog{background:#1c1c1e; color:var(--ink)}
+  .shot{background:#232325}
+  .misibox{background:#2c1614}
+  .misi-row .b-buy{color:#1a0a08}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <h1>Kelingkong <span id="teamLbl"></span></h1>
+    <div class="money" id="cash">–</div>
+  </div>
+  <div class="sub" id="sub">Memuat…</div>
+</header>
+<div class="stale" id="stale" hidden></div>
+<div class="misibox" id="misiBox" hidden>
+  <div class="misi-h">🚨 RAZIA PAJAK</div>
+  <div class="misi-txt" id="misi-txt"></div>
+  <div class="misi-row">
+    <div class="misi-time" id="misi-time">–:–</div>
+    <button class="b-buy" id="misi-go" type="button">Kirim foto</button>
+  </div>
+</div>
+
+<main>
+  <section id="v-harga">
+    <input class="search" id="q" placeholder="Cari landmark atau distrik…" autocomplete="off">
+    <div id="listHarga"></div>
+  </section>
+
+  <section id="v-tim" hidden>
+    <div class="stat">
+      <div><b id="s-uang">–</b><span>Uang</span></div>
+      <div><b id="s-skor">–</b><span>Skor</span></div>
+      <div><b id="s-lm">–</b><span>Landmark</span></div>
+      <div><b id="s-mult">–</b><span>Pengali</span></div>
+    </div>
+    <div id="hints"></div>
+    <div class="dist" style="cursor:default">Landmark kalian</div>
+    <div id="listMilik"></div>
+    <div class="dist" style="cursor:default; margin-top:22px">Objek (5 KD, sekali per tim)</div>
+    <div class="objs" id="objs"></div>
+  </section>
+
+  <section id="v-klasemen" hidden><ol class="rank" id="listRank"></ol></section>
+</main>
+
+<nav>
+  <button data-v="harga" class="on">Harga</button>
+  <button data-v="tim">Tim Kami</button>
+  <button data-v="klasemen">Klasemen</button>
+</nav>
+
+<dialog id="dlg"><form method="dialog" class="dlg">
+  <h2 id="d-title"></h2>
+  <div class="why" id="d-why"></div>
+  <div id="d-res"></div>
+  <label class="shot" id="d-shot">
+    📷 Ambil foto tim di lokasi
+    <input type="file" accept="image/*" capture="environment" id="d-file" hidden>
+  </label>
+  <div class="btns">
+    <button value="cancel" type="submit" id="d-cancel">Batal</button>
+    <button class="b-buy" id="d-go" type="button">Kirim</button>
+  </div>
+</form></dialog>
+
+<script>
+const CONFIG = {
+  ENDPOINT: "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec",
+  // Paste Publish-to-web CSV URLs here to take reads off the script. See ledger-system.md:
+  // reads and writes are meant to fail independently, and while these are blank they do not.
+  CSV: {  harga:"https://docs.google.com/spreadsheets/d/e/2PACX-1vRZtJ_jUy0N0GHhA0GhToHBRc0pIn8-MAPt5ksKGfbBhIhxLOJUHa_ToDZ74zbXkekHScuwbbDg9xHM/pub?gid=446296709&single=true&output=csv",
+          milik:"https://docs.google.com/spreadsheets/d/e/2PACX-1vRZtJ_jUy0N0GHhA0GhToHBRc0pIn8-MAPt5ksKGfbBhIhxLOJUHa_ToDZ74zbXkekHScuwbbDg9xHM/pub?gid=2114514653&single=true&output=csv",
+          tim:"https://docs.google.com/spreadsheets/d/e/2PACX-1vRZtJ_jUy0N0GHhA0GhToHBRc0pIn8-MAPt5ksKGfbBhIhxLOJUHa_ToDZ74zbXkekHScuwbbDg9xHM/pub?gid=619524939&single=true&output=csv",
+          klasemen:"https://docs.google.com/spreadsheets/d/e/2PACX-1vRZtJ_jUy0N0GHhA0GhToHBRc0pIn8-MAPt5ksKGfbBhIhxLOJUHa_ToDZ74zbXkekHScuwbbDg9xHM/pub?gid=1151681000&single=true&output=csv",
+          // Blank until the aktivitas tab is published (Publish to web ▸ specific sheet ▸
+          // CSV, same as the other four). While blank, task/object completion state is
+          // simply unavailable in CSV mode — it degrades, it does not break.
+          aktivitas: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZtJ_jUy0N0GHhA0GhToHBRc0pIn8-MAPt5ksKGfbBhIhxLOJUHa_ToDZ74zbXkekHScuwbbDg9xHM/pub?gid=1341898591&single=true&output=csv",
+          // The "Objects to Find" list is not finalized — keeping it in a published tab
+          // (columns: nama, harga) means the committee can add/remove/reprice objects any
+          // time without a redeploy. Blank until that tab exists; OBJECTS below is the
+          // fallback while it's blank, same degrade-not-break pattern as `aktivitas`.
+          objek: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRZtJ_jUy0N0GHhA0GhToHBRc0pIn8-MAPt5ksKGfbBhIhxLOJUHa_ToDZ74zbXkekHScuwbbDg9xHM/pub?gid=1371756301&single=true&output=csv"
+        },
+  // Flip to the backup Form URL if the script dies mid-event. One edit, no redeploy.
+  BACKUP_FORM: "",
+  REFRESH_MS: 45000,
+  // Missions are read live from the script (?misi=1), never through CONFIG.CSV — those
+  // are Google Publish-to-web CSVs that recache on their own schedule (minutes, not
+  // seconds; see the PENDING comment below), and a mission deadline hidden behind that
+  // lag would silently eat into a team's 15-minute window before the box ever appeared.
+  MISI_POLL_MS: 8000,
+  PHOTO_MAX_PX: 1200,
+  PHOTO_QUALITY: 0.7,
+  // Fallback only, used while CSV.objek is blank or not yet publishing — not the source
+  // of truth once the sheet exists. [name, KD] pairs, not finalized.
+  OBJECTS: [["Cha Chaan Teng",5],["Dim Sum",5],["Bolo Bun",5],["Egg Waffle",5],
+            ["Mango Mochi",5],["Dai Pai Dong",5],["Milk Tea",5]],
+};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c =>
+  ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+// ---- team identity: ?tim=7, remembered so a reopened tab still knows who you are
+const params = new URLSearchParams(location.search);
+let TEAM = parseInt(params.get("tim") || localStorage.getItem("kk.team") || "0", 10);
+if (TEAM) localStorage.setItem("kk.team", String(TEAM));
+
+let DATA = { harga:[], milik:[], tim:[], klasemen:[], aktivitas:[], objek:[] },
+    LAST_OK = 0, view = "harga";
+// Active surprise mission, from the live ?misi=1 read — MISI.now/deadline are server
+// timestamps (ms); MISI_AT is this client's Date.now() at the moment they were fetched,
+// so the countdown corrects for clock skew instead of trusting the device's own clock.
+let MISI = null, MISI_AT = 0, misiTimer = null;
+// Submissions this page has seen succeed but the published CSV hasn't confirmed yet.
+// Google's Publish-to-web CSV recaches on its own schedule (minutes, not seconds) —
+// every load() below fetches whatever it last cached, which is often still the old
+// board. Each entry here gets reapplied on top of every fetch until the fetched data
+// itself contains it, so a team never watches its own purchase "undo itself" while
+// waiting for Google to catch up.
+let PENDING = [];
+
+// ---- data ------------------------------------------------------------------
+function parseCSV(t){
+  const rows=[]; let row=[], cell="", q=false;
+  for (let i=0;i<t.length;i++){
+    const c=t[i];
+    if (q){ if(c==='"'){ if(t[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=c; }
+    else if (c==='"') q=true;
+    else if (c===",") { row.push(cell); cell=""; }
+    else if (c==="\n"){ row.push(cell); rows.push(row); row=[]; cell=""; }
+    else if (c!=="\r") cell+=c;
+  }
+  if (cell||row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+
+async function load(){
+  try{
+    let d;
+    if (CONFIG.CSV.harga){
+      const names = ["harga","milik","tim","klasemen"];
+      const results = await Promise.all(names
+        .map(n => fetch(CONFIG.CSV[n], {cache:"no-store"}).then(r=>r.text()).then(parseCSV)));
+      d = {}; names.forEach((n,i) => d[n] = results[i]);
+      // aktivitas and objek are published separately and may lag the other four — fetch
+      // each if its URL is filled in, otherwise degrade rather than fail.
+      d.aktivitas = CONFIG.CSV.aktivitas
+        ? await fetch(CONFIG.CSV.aktivitas, {cache:"no-store"}).then(r=>r.text()).then(parseCSV)
+        : (DATA.aktivitas || []);
+      d.objek = CONFIG.CSV.objek
+        ? await fetch(CONFIG.CSV.objek, {cache:"no-store"}).then(r=>r.text()).then(parseCSV)
+        : (DATA.objek || []);
+    } else {
+      const r = await fetch(CONFIG.ENDPOINT + "?data=1", {cache:"no-store"});
+      d = await r.json();
+      if (!d || !d.harga) throw new Error("bad payload");
+    }
+    DATA = d;
+    // Drop any pending action the fetch itself now confirms; reapply everything still
+    // unconfirmed on top of this fetch, so a still-stale CSV can't roll the view back.
+    PENDING = PENDING.filter(p => !confirmedBy(p, DATA));
+    PENDING.forEach(p => applyOptimistic(p.kind, p.item, p.res));
+    LAST_OK = Date.now();
+    localStorage.setItem("kk.cache", JSON.stringify({ t:LAST_OK, d }));
+    $("#stale").hidden = true;
+  }catch(err){
+    // Never blank the screen. A stale board a team can still read beats an empty one.
+    const c = localStorage.getItem("kk.cache");
+    if (c && !LAST_OK){ const p = JSON.parse(c); DATA = p.d; LAST_OK = p.t; }
+    if (LAST_OK){
+      const mins = Math.round((Date.now()-LAST_OK)/60000);
+      $("#stale").hidden = false;
+      $("#stale").textContent = "Koneksi bermasalah — data terakhir " + mins +
+        " menit lalu. Harga mungkin sudah berubah.";
+    } else {
+      $("#sub").textContent = "Tidak bisa memuat papan. Cek koneksi.";
+    }
+  }
+  render();
+}
+
+// ---- surprise missions: live poll, never the cached CSV path (see MISI_POLL_MS above) --
+async function loadMisi(){
+  try{
+    const r = await fetch(CONFIG.ENDPOINT + "?misi=1", {cache:"no-store"});
+    const j = await r.json();
+    MISI = (j && j.active) ? j : null;
+    MISI_AT = Date.now();
+  }catch(err){
+    // Leave the last known MISI in place — the countdown just free-runs on the client
+    // clock until the next successful poll corrects it. Never worse than showing nothing.
+  }
+  renderMisi();
+}
+
+function tickMisi(){
+  if (!MISI){ clearInterval(misiTimer); return; }
+  const serverNow = MISI.now + (Date.now() - MISI_AT);
+  const msLeft = MISI.deadline - serverNow;
+  if (msLeft <= 0){
+    $("#misi-time").textContent = "Habis";
+    clearInterval(misiTimer);
+    return;
+  }
+  const s = Math.floor(msLeft / 1000);
+  $("#misi-time").textContent =
+    String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+}
+
+function renderMisi(){
+  const box = $("#misiBox");
+  if (misiTimer) clearInterval(misiTimer);
+  if (!MISI){ box.hidden = true; return; }
+  const done = body(DATA.aktivitas)
+    .some(r => Number(r[0]) === TEAM && r[1] === "mission" && r[2] === MISI.mission_id);
+  box.hidden = false;
+  $("#misi-txt").textContent = MISI.text;
+  $("#misi-go").disabled = done;
+  $("#misi-go").textContent = done ? "✓ Terkirim" : "Kirim foto";
+  tickMisi();
+  misiTimer = setInterval(tickMisi, 1000);
+}
+
+$("#misi-go").onclick = () => {
+  if (!MISI) return;
+  act("mission", MISI.mission_id, MISI.text);
+};
+
+const body = rows => (rows||[]).slice(1).filter(r => r && r[0] !== "" && r[0] != null);
+const mine = () => body(DATA.milik).filter(r => Number(r[0]) === TEAM);
+const myTim = () => body(DATA.tim).find(r => Number(r[0]) === TEAM);
+const doneTasks = () => new Set(body(DATA.aktivitas)
+  .filter(r => Number(r[0]) === TEAM && r[1] === "task").map(r => r[2]));
+const doneObjects = () => new Set(body(DATA.aktivitas)
+  .filter(r => Number(r[0]) === TEAM && r[1] === "object").map(r => r[2]));
+
+// ---- scoring mirror: same rule as Standings, so the hint cannot contradict the Sheet
+const MULT = n => n>=3 ? 1.8 : n===2 ? 1.6 : n===1 ? 1.4 : 1.0;
+function multiplierOf(held, sides){
+  const m = MULT(held);
+  return sides >= 2 ? m : Math.min(m, 1.4);
+}
+function sideOf(district){
+  const row = body(DATA.harga).find(r => r[1] === district);
+  return row ? row[2] : "";
+}
+function sideClass(side){
+  return side === "Hong Kong Island" ? "hk" : side === "Kowloon" ? "kln" :
+         side === "East Kowloon" ? "ek" : "";
+}
+
+function myState(){
+  const own = mine();
+  const byDist = {};
+  own.forEach(r => (byDist[r[2]] = byDist[r[2]] || []).push(r));
+  const held = Object.keys(byDist).filter(d => byDist[d].length >= 2);
+  const sides = new Set(held.map(sideOf));
+  const face = own.reduce((s,r) => s + Number(r[3] || 0), 0);
+  return { own, byDist, held, sides, face,
+           mult: multiplierOf(held.length, sides.size) };
+}
+
+// ---- optimistic patch: apply a successful submission locally --------------
+// The board is read from a published Google Sheets CSV, which Google recaches on its
+// own schedule (minutes, not seconds) — it is NOT updated the moment we write. Waiting
+// on the next fetch to reflect a submission the team just watched succeed is exactly
+// the "nothing updated" complaint. The write response already tells us precisely what
+// happened, so patch DATA with it directly instead of waiting on the CSV to catch up.
+// The next real poll (load()) still runs and reconciles/overwrites this — this only
+// closes the gap until that arrives.
+function applyOptimistic(kind, item, res){
+  if (!TEAM) return;
+  const t = myTim();
+  if (!t) return;                       // tim row not loaded yet — nothing safe to patch
+  const amount = Number(res.amount || 0);
+  if (kind === "task" || kind === "object" || kind === "mission"){
+    DATA.aktivitas = (DATA.aktivitas || []).concat([[String(TEAM), kind, item]]);
+    t[1] = String(Number(t[1] || 0) + amount);
+  } else if (kind === "buy"){
+    const lm = body(DATA.harga).find(r => r[0] === item);
+    const val = lm ? lm[4] : 0;
+    const dist = lm ? lm[1] : (res.district || "");
+    DATA.milik = (DATA.milik || []).concat([[String(TEAM), item, dist, val]]);
+    t[1] = String(Number(t[1] || 0) + amount);           // amount is already -cost
+    if (lm){
+      lm[6] = String(Number(lm[6] || 0) + 1);             // pembeli
+      if (res.titleholder) lm[7] = String(TEAM);          // pemegang_title
+    }
+  }
+  // Landmark count, multiplier and score are recomputed with the same math Standings
+  // uses (myState()), so the optimistic view can't drift from what the Sheet confirms.
+  const st = myState();
+  t[2] = String(st.own.length);
+  t[6] = st.mult.toFixed(1);
+  t[7] = String(Math.round(Number(t[1]) + st.face * st.mult));
+}
+
+// True once a fetched payload itself contains the action — i.e. Google's CSV cache has
+// finally caught up — at which point PENDING can drop it instead of reapplying it forever.
+function confirmedBy(p, data){
+  if (p.kind === "buy"){
+    return body(data.milik).some(r => Number(r[0]) === TEAM && r[1] === p.item);
+  }
+  return body(data.aktivitas).some(r =>
+    Number(r[0]) === TEAM && r[1] === p.kind && r[2] === p.item);
+}
+
+// ---- the hint: what one more purchase would actually be worth ---------------
+function hints(){
+  const st = myState();
+  const out = [];
+  const owned = new Set(st.own.map(r => r[1]));
+  const cands = {};
+  body(DATA.harga).forEach(r => {
+    if (owned.has(r[0])) return;
+    const d = r[1];
+    if (!cands[d] || Number(r[3]) < Number(cands[d][3])) cands[d] = r;
+  });
+
+  Object.keys(cands).forEach(d => {
+    const lm = cands[d];
+    const now = (st.byDist[d] || []).length;
+    if (now !== 1) return;                       // only one-away districts
+    const held2 = st.held.concat([d]);
+    const sides2 = new Set(held2.map(sideOf));
+    const m2 = multiplierOf(held2.length, sides2.size);
+    const gain = Math.round((st.face + Number(lm[4])) * m2 - st.face * st.mult - Number(lm[3]));
+    out.push({ lm, d, m2, gain });
+  });
+
+  out.sort((a,b) => b.gain - a.gain);
+  const el = $("#hints");
+
+  if (!st.own.length){
+    el.innerHTML = '<div class="hint">Beli <b>2 landmark di satu distrik</b> supaya nilai ' +
+      'kalian mulai naik. Satu landmark sendirian tidak menambah apa-apa.</div>';
+    return;
+  }
+  let h = "";
+  if (out.length){
+    const b = out[0];
+    h += '<div class="hint">Beli <b>' + esc(b.lm[0]) + '</b> (' + esc(b.d) + ', ' +
+         b.lm[3] + ' KD) → kalian menguasai ' + esc(b.d) +
+         ', pengali jadi <b>×' + b.m2.toFixed(1) + '</b>' +
+         (b.gain > 0 ? ', untung sekitar <b>+' + b.gain + '</b>' : '') + '.</div>';
+  }
+  if (st.held.length && st.sides.size < 2){
+    h += '<div class="note">Semua distrik kalian ada di <b>' +
+         esc([...st.sides][0]) + '</b>. Pengali kalian mentok di <b>×1.4</b> sampai ' +
+         'kalian menguasai distrik di sisi lain.</div>';
+  }
+  const lone = Object.keys(st.byDist).filter(d => st.byDist[d].length === 1);
+  if (lone.length && !out.length){
+    h += '<div class="note">' + esc(lone.join(", ")) +
+         ' baru punya 1 landmark — belum dihitung sebagai distrik dikuasai.</div>';
+  }
+  el.innerHTML = h;
+}
+
+// ---- render ----------------------------------------------------------------
+function render(){
+  const t = myTim();
+  $("#teamLbl").textContent = TEAM ? "· Tim " + TEAM : "";
+  $("#cash").textContent = t ? t[1] + " KD" : "–";
+  if (t) $("#sub").textContent = "Skor " + t[7] + " · " + t[2] + " landmark · pengali ×" +
+    Number(t[6]).toFixed(1);
+  else if (!TEAM) $("#sub").textContent = "Pilih tim kalian di bawah.";
+
+  renderHarga(); renderMilik(); renderRank(); renderObjs(); renderMisi();
+  if (TEAM) hints();
+  ["s-uang","s-skor","s-lm","s-mult"].forEach((id,i) =>
+    $("#"+id).textContent = t ? [t[1], t[7], t[2], "×"+Number(t[6]).toFixed(1)][i] : "–");
+}
+
+// ---- Harga list: grouped by district, each district collapsible -------------
+// OPEN tracks manually-toggled districts and survives re-renders (including the 45s
+// poll). Seeded once, on first render, with districts the team already holds — after
+// that only an explicit tap changes it. Searching auto-expands whatever it matches
+// without touching OPEN, so the manual state is exactly what's left when the query
+// is cleared.
+let OPEN = null;
+
+function renderHarga(){
+  const q = ($("#q").value || "").toLowerCase();
+  const owned = new Set(mine().map(r => r[1]));
+  const doneT = doneTasks();
+  const rows = body(DATA.harga).filter(r =>
+    !q || (r[0]+" "+r[1]+" "+r[2]).toLowerCase().includes(q));
+  const by = {};
+  rows.forEach(r => (by[r[1]] = by[r[1]] || []).push(r));
+
+  if (OPEN === null){
+    const held = TEAM ? Object.keys(myState().byDist) : [];
+    OPEN = new Set(held);
+  }
+
+  $("#listHarga").innerHTML = Object.keys(by).map(d => {
+    const items = by[d];
+    const n = owned.size ? [...owned].filter(x => items.some(r => r[0] === x)).length : 0;
+    const prices = items.map(r => Number(r[3]));
+    const lo = Math.min(...prices), hi = Math.max(...prices);
+    const range = lo === hi ? (lo + " KD") : (lo + "–" + hi + " KD");
+    const sc = sideClass(items[0][2]);
+    const isOpen = OPEN.has(d) || !!q;   // searching always shows what matched
+    return '<div class="grp' + (isOpen ? '' : ' collapsed') + '" data-dist="' + esc(d) + '">' +
+      '<div class="dist"><span class="lead"><span class="arrow">' + (isOpen ? '▾' : '▸') +
+      '</span><span class="dot ' + sc + '"></span><span class="txt">' + esc(d) + ' · ' +
+      esc(items[0][2]) + ' · ' + items.length + ' landmark · ' + range + '</span></span>' +
+      (n ? '<span>punya ' + n + '</span>' : '') + '</div>' +
+      '<div class="cards">' + items.map(r => card(r, owned.has(r[0]), doneT.has(r[0]))).join("") +
+      '</div></div>';
+  }).join("") || '<p class="sub">Tidak ada yang cocok.</p>';
+}
+
+$("#listHarga").addEventListener("click", e => {
+  const h = e.target.closest(".dist");
+  if (!h) return;
+  const grp = h.closest(".grp");
+  const d = grp.dataset.dist;
+  if (OPEN.has(d)) OPEN.delete(d); else OPEN.add(d);
+  renderHarga();
+});
+
+function card(r, own, taskDone){
+  const [nm, dist, side, price, val, task, buyers, holder] = r;
+  const sc = sideClass(side);
+  const nmAttr = JSON.stringify(nm).replace(/"/g,"&quot;");
+  // Buying and doing the task are independent income streams (operations.md) — owning
+  // the landmark must not hide the task button. Only the Beli slot changes on ownership.
+  const taskBtn = taskDone
+    ? '<button class="b-task done" disabled>✓ Tugas selesai</button>'
+    : '<button class="b-task" onclick="act(\'task\',' + nmAttr + ')">Tugas +' + task + '</button>';
+  const buySlot = own
+    ? '<button class="done" disabled>✓ Milik kalian</button>'
+    : '<button class="b-buy" onclick="act(\'buy\',' + nmAttr + ')">Beli ' + price + '</button>';
+  return '<div class="card' + (own ? ' mine' : '') + ' ' + sc + '">' +
+    '<div class="top"><div><div class="nm">' + esc(nm) + '</div>' +
+    '<div class="meta">Nilai ' + val + ' · tugas +' + task + ' KD' +
+    (Number(buyers) ? ' · ' + buyers + ' pembeli' : '') +
+    (holder ? ' · title Tim ' + esc(holder) : '') + '</div></div>' +
+    '<div class="pr">' + price + '</div></div>' +
+    '<div class="btns">' + taskBtn + buySlot + '</div></div>';
+}
+
+function renderMilik(){
+  const own = mine();
+  const st = myState();
+  $("#listMilik").innerHTML = own.length ? Object.keys(st.byDist).map(d => {
+    const heldOk = st.byDist[d].length >= 2;
+    const sc = sideClass(sideOf(d));
+    return '<div class="card deed' + (heldOk ? ' mine' : '') + ' ' + sc + '">' +
+      '<div class="top"><div class="nm">' + esc(d) + '</div><div class="pr">' +
+      st.byDist[d].reduce((s,r) => s + Number(r[3]||0), 0) + '</div></div>' +
+      '<div class="meta">' + st.byDist[d].map(r => esc(r[1])).join(" · ") + '</div>' +
+      '<div style="margin-top:7px"><span class="tag' + (heldOk ? ' own' : '') +
+      '">' + (heldOk ? 'Dikuasai' : 'Baru 1 — belum dikuasai') +
+      '</span></div></div>';
+  }).join("")
+    : '<p class="sub">Belum punya landmark.</p>';
+}
+
+function renderRank(){
+  $("#listRank").innerHTML = body(DATA.klasemen).map(r =>
+    '<li class="' + (Number(r[1]) === TEAM ? 'me' : '') + '">' +
+    '<span class="pos">' + r[0] + '</span>' +
+    '<span class="grow">Tim ' + esc(r[1]) + '</span>' +
+    '<span class="sc">' + r[2] + '</span></li>').join("");
+}
+
+// List of findable objects: the published `objek` tab if it's live, else CONFIG.OBJECTS.
+// Not hardcoded once the tab exists — the committee can add/remove/reprice objects with
+// no redeploy, same reasoning as everything else that stays unfinalized until game day.
+function objectList(){
+  const rows = body(DATA.objek);
+  return rows.length
+    ? rows.map(r => [r[0], Number(r[1] || 5)])
+    : CONFIG.OBJECTS;
+}
+
+function renderObjs(){
+  const done = doneObjects();
+  $("#objs").innerHTML = objectList().map(([name, kd]) => {
+    const isDone = done.has(name);
+    const nAttr = JSON.stringify(name).replace(/"/g,"&quot;");
+    return isDone
+      ? '<button class="done" disabled>✓ ' + esc(name) + '</button>'
+      : '<button onclick="act(\'object\',' + nAttr + ')">' + esc(name) + '</button>';
+  }).join("");
+}
+
+// ---- submitting ------------------------------------------------------------
+let pending = null, photo = null;
+
+function act(kind, item, label){
+  if (!TEAM){ alert("Pilih tim kalian dulu."); return; }
+  if (CONFIG.BACKUP_FORM){ location.href = CONFIG.BACKUP_FORM; return; }
+  pending = { kind, item }; photo = null;
+  $("#d-title").textContent =
+    (kind === "buy" ? "Beli " : kind === "task" ? "Tugas di " :
+     kind === "mission" ? "Misi: " : "Objek: ") + (label || item);
+  $("#d-why").textContent = kind === "object"
+    ? "Foto objeknya. " +
+      (objectList().find(([n]) => n === item)?.[1] ?? 5) + " KD, sekali per tim."
+    : kind === "mission"
+    ? "Foto bukti misi ini. Kirim sebelum waktu habis supaya tidak kena denda."
+    : "Semua anggota tim harus ada di dalam foto.";
+  $("#d-res").innerHTML = "";
+  $("#d-shot").innerHTML = "📷 Ambil foto tim di lokasi" +
+    '<input type="file" accept="image/*" capture="environment" id="d-file" hidden>';
+  wireFile();
+  $("#d-go").disabled = false; $("#d-go").textContent = "Kirim";
+  $("#dlg").showModal();
+}
+
+function wireFile(){
+  $("#d-file").onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const img = new Image(), rd = new FileReader();
+    rd.onload = () => { img.onload = () => {
+      // Downscaled on the phone: a 4 MB original over mobile data is the slowest part
+      // of the whole submission, and nobody needs a 12 MP photo of a shopping mall.
+      const sc = Math.min(1, CONFIG.PHOTO_MAX_PX / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width*sc); c.height = Math.round(img.height*sc);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      photo = c.toDataURL("image/jpeg", CONFIG.PHOTO_QUALITY);
+      $("#d-shot").innerHTML = '<img src="' + photo + '" alt="">' +
+        '<input type="file" accept="image/*" capture="environment" id="d-file" hidden>';
+      wireFile();
+    }; img.src = rd.result; };
+    rd.readAsDataURL(f);
+  };
+}
+
+$("#d-go").onclick = async () => {
+  if (!pending) return;
+  const btn = $("#d-go");
+  // Disabled for the whole round trip. It takes ~3s; without this teams double-tap,
+  // which is exactly what the idempotency key exists to absorb.
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span>Mengirim…';
+  const payload = {
+    submissionId: (crypto.randomUUID ? crypto.randomUUID()
+      : String(Date.now()) + Math.random()),
+    team: TEAM, action: pending.kind, item: pending.item,
+  };
+  if (photo) payload.photo = photo;
+  try{
+    const r = await fetch(CONFIG.ENDPOINT, {
+      method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(payload), redirect:"follow",
+    });
+    const res = await r.json();
+    $("#d-res").innerHTML = '<div class="res ' + (res.ok ? "ok" : "no") + '">' +
+      esc(res.message || (res.ok ? "Tercatat." : "Gagal — coba lagi.")) + '</div>';
+    btn.textContent = res.ok ? "Selesai" : "Coba lagi";
+    btn.disabled = !!res.ok;
+    if (res.ok) {
+      // Show the true result immediately — don't wait on load(), which reads a CSV
+      // that may not have recached yet. Queue it in PENDING too, so it survives every
+      // load() (this one and the 45s poll) until the CSV itself confirms it, rather
+      // than being wiped by the very next still-stale fetch.
+      PENDING.push({ kind: pending.kind, item: pending.item, res });
+      applyOptimistic(pending.kind, pending.item, res);
+      render();
+      load();
+      setTimeout(() => $("#dlg").close(), 1400);
+    } else btn.disabled = false;
+  }catch(err){
+    $("#d-res").innerHTML = '<div class="res no">Tidak terkirim. Cek sinyal, lalu ' +
+      'tekan Kirim lagi — pengiriman ganda tidak akan terhitung dua kali.</div>';
+    btn.disabled = false; btn.textContent = "Kirim lagi";
+  }
+};
+
+// ---- nav / boot ------------------------------------------------------------
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  view = b.dataset.v;
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  ["harga","tim","klasemen"].forEach(v => $("#v-"+v).hidden = (v !== view));
+  window.scrollTo(0,0);
+});
+$("#q").oninput = renderHarga;
+
+if (!TEAM){
+  const n = prompt("Nomor tim kalian (1-25)?");
+  const v = parseInt(n, 10);
+  if (v >= 1 && v <= 25){ TEAM = v; localStorage.setItem("kk.team", String(v)); }
+}
+load();
+setInterval(load, CONFIG.REFRESH_MS);
+loadMisi();
+setInterval(loadMisi, CONFIG.MISI_POLL_MS);
+</script>
+</body>
+</html>
