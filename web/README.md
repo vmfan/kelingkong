@@ -8,8 +8,22 @@ Open `index.html?tim=7` — the team number comes from the URL and is remembered
 
 ## Hosting
 
-Anything that serves a static file: GitHub Pages, Netlify Drop, Cloudflare Pages. It must
-be served over http(s), not `file://` — `fetch` is blocked on file URLs.
+Live at **<https://vmfan.github.io/kelingkong/index.html>** — GitHub Pages, private repo
+(`vmfan/kelingkong`, GitHub Pro), served from a `gh-pages` branch containing only this
+`web/` folder (Pages' folder picker only offers `/` or `/docs` on `main`, not `/web`, so a
+dedicated branch is the workaround). Verified end-to-end 2026-08-21: all 6 published CSVs
+and the Apps Script `?misi=1` endpoint load with no CORS errors from that origin.
+
+**To redeploy after editing anything under `web/`:** commit on `main`, then run
+
+```
+git subtree split --prefix=web -b gh-pages-tmp
+git push origin gh-pages-tmp:gh-pages --force
+git branch -D gh-pages-tmp
+```
+
+from the repo root. GitHub Pages rebuilds automatically within ~1 minute of the
+`gh-pages` push.
 
 Local check: `python3 -m http.server 8765` then <http://localhost:8765/index.html?tim=7>.
 
