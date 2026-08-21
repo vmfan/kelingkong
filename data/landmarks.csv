@@ -1,0 +1,52 @@
+canonical_name,district_2026,region_rules_2025,zone_landmarks_2025,base_price,base_price_precompression,points_2025,nearest_mtr,walk_from_mtr_min,eta_from_bni_min,task_type,aliases,notes
+United Centre,Admiralty,HK Island,Zone 2,10,10,1,Admiralty,0,5,photo,United Center,MTR-connected
+Pacific Place,Admiralty,HK Island,Zone 2,10,10,1,Admiralty,0,9,photo,Pacific place,MTR-connected
+The Henderson,Admiralty,HK Island,Zone 2,10,10,1,Admiralty,0,7,photo,,Listed under Central on the Landmarks tab; grouped with Admiralty for walking distance
+Lan Kwai Fong,Central,HK Island,Zone 2,10,10,1,Central,6,11,photo,LKF,
+Central Market,Central,HK Island,Zone 2,10,10,1,Central,8,13,detail,,
+Tai Kwun,Central,HK Island,Zone 2,20,20,2,Central,11,16,riddle,Tai Kwun (Prison),
+AIA Ferris Wheel,Central,HK Island,Zone 2,30,30,3,Central,12,17,photo,Hong Kong Observation|AIA Ferris Wheel + Pier|HK observatory wheel,
+Vission,Central,HK Island,Zone 2,30,40,4,Central,12,18,riddle,,SPELLING UNCONFIRMED - see docs/2025/data-audit.md item 7. Do not print until verified.
+Man Mo Temple,Sheung Wan,HK Island,Zone 2,30,30,3,Sheung Wan,8,15,riddle,Man Mo temple,
+Hollywood Road Park,Sheung Wan,HK Island,Zone 2,20,20,2,Sheung Wan,9,16,photo,Hollywood Road Soho,
+PMQ,Sheung Wan,HK Island,Zone 2,30,30,3,Sheung Wan,10,18,detail,,
+Tsim Chai Kee,Sheung Wan,HK Island,Zone 2,20,20,2,Central,8,14,food,Tsim Chai Kee Noodle,
+Times Square,Causeway Bay,HK Island,Zone 2,10,10,1,Causeway Bay,5,13,photo,Times square,
+Bakehouse,Causeway Bay,HK Island,Zone 2,10,10,1,Causeway Bay,1,10,food,,
+KJRI Hong Kong,Causeway Bay,HK Island,Zone 2,20,20,2,Causeway Bay,6,14,photo,KJRI HK|KJRI,Indonesian Consulate General
+Victoria Park,Causeway Bay,HK Island,Zone 2,20,20,2,Tin Hau,5,15,photo,Victoria park,
+Hong Kong Exhibition Centre,Wan Chai,HK Island,Zone 2,30,30,3,Exhibition Centre,0,10,detail,Hong Kong Exhibition|HKCEC|Exhibition Center,
+Lee Tung Avenue,Wan Chai,,Zone 2,20,20,,Wan Chai,5,12,photo,Lee tung avenue,Added 2026 from unused 2025 brainstorm; price estimated from district
+Southorn Playground,Wan Chai,,Zone 2,20,20,,Wan Chai,3,12,photo,Southorn playground,Added 2026 from unused 2025 brainstorm; price estimated from district
+Avenue of Stars,TST Waterfront,TST,Zone 1,10,10,1,TST,12,20,photo,Avenue of stars,
+Bruce Lee Statue,TST Waterfront,TST,Zone 1,20,20,2,TST,12,20,photo,Bruce Lee|Brucelee|Bruce lee statue,On the Avenue of Stars
+K11 Musea,TST Waterfront,TST,Zone 1,10,10,1,TST,12,20,detail,K11,
+Hong Kong Museum of Art,TST Waterfront,TST,Zone 1,10,10,1,TST,9,17,riddle,MOA|Museum of Arts|HKMoA,
+1881 Heritage,TST Waterfront,TST,Zone 1,10,10,1,TST,9,16,riddle,Heritage 1881,
+K11 Art Mall,TST Central,TST,Zone 1,10,10,1,TST,2,11,detail,K11 Artmall|K11 art mall,
+The Peninsula,TST Central,TST,Zone 1,10,10,1,TST,7,14,photo,Peninsula|Peninsula Hotel,
+Kowloon Park,TST Central,TST,Zone 1,20,20,2,TST,8,15,photo,Kowloon park,
+Hashtag B,TST Central,TST,Zone 1,20,20,2,TST,5,12,food,,
+Apple Canton Road,TST Central,TST,Zone 1,30,30,3,TST,8,15,detail,,
+Elements,West Kowloon,TST,Zone 1,30,30,3,Kowloon,6,21,detail,Elementals,
+M+,West Kowloon,TST,Zone 1,30,40,4,Kowloon,9,28,riddle,M+ Museum,Game post 2 is sited here
+West Kowloon Art Park,West Kowloon,TST,Zone 1,40,50,5,Kowloon,15,34,photo,west Kowloon park|West kowloon art park,
+Paper Stone Bakery,Whampoa-Hung Hom,TST,Zone 3,30,40,4,Whampoa,1,21,food,Paperstone|Paper stone bakery,
+Aeon Supermarket,Whampoa-Hung Hom,TST,Zone 3,30,40,4,Whampoa,4,24,detail,Kapal AEON|Aeon,The ship-shaped mall
+Shanxi Cut Noodles,Whampoa-Hung Hom,TST,Zone 3,30,40,4,Whampoa,5,25,food,Ming Hing Shanxi|Shanxi cut noodles,
+Hung Hom Promenade,Whampoa-Hung Hom,TST,Zone 3,40,50,5,Hung Hom,15,27,photo,Hung hom promenade,
+Toko Wijaya,Whampoa-Hung Hom,,Zone 3,30,40,,Whampoa,6,25,detail,Toko wijaya,Added 2026 from unused 2025 brainstorm; Indonesian grocery
+Sneakers Street,Mongkok,Kai Tak,Zone 1,30,30,3,Mong Kok,5,17,photo,Sneaker Street,
+Argyle Centre,Mongkok,Kai Tak,Zone 1,30,30,3,Mong Kok,1,15,detail,Argyle center|Argyle centre,
+Ladies Market,Mongkok,Kai Tak,Zone 1,30,30,3,Mong Kok,5,17,photo,Ladies market,
+Kadorar Bakery,Mongkok,Kai Tak,Zone 1,30,40,4,Yau Ma Tei,2,13,food,Kadorar et Levain|Kadorar bakery,
+Dragon Centre,Sham Shui Po-Prince Edward,Kai Tak,Zone 1,30,40,4,Sham Shui Po,4,21,food,Dragon center|Dragon Center (makan geprek),The 2025 sheet notes this as the geprek stop
+DeDo Bear,Sham Shui Po-Prince Edward,Kai Tak,Zone 1,30,40,4,Sham Shui Po,5,21,photo,DoDo bear|DeDo bear,
+Kam Wah Cafe,Sham Shui Po-Prince Edward,Kai Tak,Zone 1,30,40,4,Prince Edward,6,20,food,Kam Wah|Kam wah cafe,
+AIRSIDE,Kai Tak,Kai Tak,Zone 3,40,50,5,Kai Tak,10,36,detail,Airside,
+Petite First Kai Tak,Kai Tak,Kai Tak,Zone 3,40,50,5,Kai Tak,8,34,photo,Petite First,
+Kai Tak Stadium,Kai Tak,Kai Tak,Zone 3,40,60,6,Kai Tak,10,34,photo,Stadium,Game post 3 is sited here
+Twin Tower,Kai Tak,,Zone 3,40,60,,Kai Tak,10,35,photo,The Twins|Twin Tower,Added 2026 from unused 2025 brainstorm; price estimated from district
+Choi Hung Rainbow,East Kowloon,Kai Tak,Zone 3,50,70,7,Choi Hung,5,36,photo,Rainbow|Choi Hung rainbow,The rainbow basketball courts
+Kowloon Walled City Park,East Kowloon,Kai Tak,Zone 3,50,70,7,Sung Wong Toi,14,37,riddle,Kowloon walled City Park,
+Nan Lian Garden,East Kowloon,Kai Tak,Zone 3,50,70,7,Diamond Hill,6,33,riddle,Nan Lian garden,

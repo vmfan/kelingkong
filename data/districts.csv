@@ -1,0 +1,14 @@
+district_2026,side,anchor_post,landmark_count,notes
+Admiralty,Hong Kong Island,Post 1 Tamar Park,3,All three MTR-connected; the cheapest cluster on the board
+Central,Hong Kong Island,Post 1 Tamar Park,5,
+Sheung Wan,Hong Kong Island,Post 1 Tamar Park,4,
+Causeway Bay,Hong Kong Island,Post 1 Tamar Park,4,
+Wan Chai,Hong Kong Island,Post 1 Tamar Park,3,Two landmarks added from the 2025 brainstorm to reach a viable set size
+TST Waterfront,Kowloon,Post 2 M+,5,Split from the 9-landmark TST district on the 2025 Landmarks tab
+TST Central,Kowloon,Post 2 M+,5,Split from the 9-landmark TST district on the 2025 Landmarks tab
+West Kowloon,Kowloon,Post 2 M+,3,Contains M+ where Post 2 is sited
+Whampoa-Hung Hom,Kowloon,Post 2 M+,5,
+Mongkok,Kowloon,Post 2 M+,4,Priced from the 2025 Kai Tak region despite being close to base - see economy.md
+Sham Shui Po-Prince Edward,Kowloon,Post 2 M+,3,Merged; Sham Shui Po alone held only 2 landmarks
+Kai Tak,East Kowloon,Post 3 Kai Tak,4,Contains Kai Tak Stadium where Post 3 is sited
+East Kowloon,East Kowloon,Post 3 Kai Tak,3,"Merged from Choi Hung, Lok Fu and Diamond Hill which held 1 landmark each. Three separate MTR stops - not walkable; see economy.md. Lok Fu is the 2025 station for Kowloon Walled City Park, filed under Sung Wong Toi for 2026 - see docs/2025/data-audit.md item 9"
