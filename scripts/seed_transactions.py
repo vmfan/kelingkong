@@ -9,7 +9,13 @@ was covered by `simulate_playtest.py`, whose board loader and scoring engine thi
 deliberately, so the expected standings are computed by code that was written before the
 Sheet existed and cannot inherit its bugs.
 
-    python3 scripts/seed_transactions.py --url <webapp-url> --all
+    python3 scripts/seed_transactions.py --url <webapp-url> --keys-csv <team-keys.csv> --all
+
+`--keys-csv` is required once `TeamKeys` exists in the Sheet (added 2026-08-31 to stop
+team-spoofed submissions, operations.md item 25) -- every submission is otherwise rejected
+as `bad_key` before it ever reaches these checks. Point it at
+`scripts/generate_team_keys.py`'s stdout redirected to a file; it skips that file's
+comment lines and stops parsing at its URL block automatically.
 
 The four checks, in order of how badly they fail in production:
 
@@ -31,6 +37,7 @@ Nothing here writes to data/ or the archive.
 """
 
 import argparse
+import csv
 import json
 import sys
 import time
@@ -79,8 +86,12 @@ def post(url, payload, timeout=60):
         return {"ok": False, "error": "transport", "message": str(err)}
 
 
+TEAM_KEYS = {}  # populated from --keys-csv; empty means every submission fails bad_key
+
+
 def action(team, act, item, photo=False, **extra):
-    p = {"submissionId": str(uuid.uuid4()), "team": team, "action": act, "item": item}
+    p = {"submissionId": str(uuid.uuid4()), "team": team, "key": TEAM_KEYS.get(team, ""),
+         "action": act, "item": item}
     if photo:
         p["photo"] = TINY_PHOTO
     p.update(extra)
@@ -236,6 +247,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--url", help="deployed Apps Script web app /exec URL")
+    ap.add_argument("--keys-csv", help="team,key CSV (scripts/generate_team_keys.py's first "
+                    "output block) -- required against a live TeamKeys tab, since every "
+                    "submission is otherwise rejected as bad_key")
     ap.add_argument("--all", action="store_true", help="run every check")
     ap.add_argument("--concurrent-buy", metavar="LANDMARK")
     ap.add_argument("--idempotency", action="store_true")
@@ -248,6 +262,15 @@ def main():
     ap.add_argument("--dry-run", action="store_true",
                     help="print the plan without posting anything")
     args = ap.parse_args()
+
+    if args.keys_csv:
+        # Tolerates generate_team_keys.py's raw stdout piped straight to a file: skips its
+        # leading "# Paste into..." comment and stops at the blank line before the URL block.
+        with open(args.keys_csv) as f:
+            lines = [l for l in f if l.strip() and not l.startswith("#")]
+        for row in csv.DictReader(lines):
+            if row.get("team", "").strip().isdigit():
+                TEAM_KEYS[int(row["team"])] = row["key"].strip()
 
     landmarks_by_name, districts = load_board()
 

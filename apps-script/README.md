@@ -6,13 +6,25 @@ properties it exists to guarantee.
 
 ## Live IDs
 
-Deployed 2026-08-19 under **deploy-account-a@example.com**.
+Deployed 2026-08-19 under deploy-account-a@example.com. Briefly migrated 2026-08-22 to a personal
+account to get away from a shared password anyone on the committee could use to break the
+script — but the deploying account also owns every file the script creates (see "Storage is
+tied to the deploying account, not the folder" below), so that moved photo-upload storage
+onto a personal Google account instead. Reverted the same day back to **deploy-account-a@example.com**
+with its password rotated and 2FA enabled, which fixes the original access-control problem
+without moving storage anywhere.
+
+(In passing, the 2026-08-22 migration also surfaced a real bug: a data-validation rule someone
+had added to `Transactions!K` was silently rejecting every status write. That rule has been
+removed — column K is the script's to write, per "Column M is not the script's" below re:
+what operators vs. the script own.)
 
 | | |
 |---|---|
 | Script | `<script-id>` |
 | Editor | <https://script.google.com/d/<script-id>/edit> |
-| Deployment | `YOUR_DEPLOYMENT_ID` (@1) |
+| GCP project | `<gcp-project-number>` (owned by deploy-account-a@example.com — pre-existing, reused rather than creating a new one) |
+| Deployment | `YOUR_DEPLOYMENT_ID` (@17) |
 | `/exec` | `https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec` |
 
 **One-time authorization is required before the endpoint answers.** `clasp login` grants
@@ -26,9 +38,37 @@ function dropdown, press **Run**, and accept the consent screen (it warns the ap
 unverified — *Advanced* → *Go to Kelingkong 2026 ledger*). Authorization is per-account, not
 per-deployment, so it survives later `clasp push` / `clasp deploy` cycles.
 
+**Transferring Drive/script ownership to a new account is not enough on its own.** The
+consent screen's "developer" identity is tied to the script's underlying GCP project. If you
+ever move the deploying account again, also relink the script to a GCP project the new account
+owns: editor → Project Settings → "Google Cloud Platform (GCP) Project" → Change project →
+paste a project number owned by the new account. Re-deploy and re-consent after relinking.
+
+**Storage is tied to the deploying account, not the folder it writes into.** `Code.gs` writes
+photos into `PHOTO_FOLDER_ID` via the deploying account's own Drive API calls
+(`executeAs: USER_DEPLOYING`) — the *creating* identity owns the resulting file regardless of
+who owns the parent folder. Owning the containing folder does not redirect storage cost. In
+practice this means whichever account backs the deployment absorbs the storage of every photo
+uploaded all event day — factor that in before ever moving the deploying account to someone's
+personal Gmail again.
+
+**Enabling the `drive` OAuth scope is not the same as enabling the Drive API.** Consenting to
+`oauthScopes: [..., "https://www.googleapis.com/auth/drive"]` only grants the *scope* — the
+**Google Drive API** service must separately be turned on for whichever GCP project backs the
+script, in Cloud Console. Without it, every `savePhoto()` call throws and the catch in `doPost`
+(around "Photo goes to Drive outside the lock") writes `UPLOAD_FAILED` to the sheet with no
+detail — this cost real time to diagnose on 2026-08-22, only found by temporarily changing that
+catch block to write `err.message` into the cell, which surfaced: `Izin ditolak saat
+mengaktifkan API: drive untuk project GCP ...`. Enable it at
+`https://console.cloud.google.com/apis/library/drive.googleapis.com?project=<project-number>`
+for the GCP project currently linked (see "Live IDs" above) any time the script is relinked to
+a different project.
+
 ## Deploy
 
-Requires clasp v3 (`npm i -g @google/clasp`). Deploying account: **deploy-account-a@example.com**.
+Requires clasp v3 (`npm i -g @google/clasp`). Deploying account: **deploy-account-a@example.com**
+(password rotated and 2FA enabled 2026-08-22 — keep the credential limited to whoever actually
+needs to redeploy, not the whole committee).
 
 Two prerequisites, both one-off and both easy to forget:
 
@@ -54,7 +94,7 @@ clasp open-web-app                              # confirm the /exec URL responds
 Then run the concurrency tests, which cannot pass or fail until this is live:
 
 ```
-python3 ../scripts/seed_transactions.py --url <exec-url> --all
+python3 ../scripts/seed_transactions.py --url <exec-url> --keys-csv <team-keys.csv> --all
 ```
 
 ## The deployment settings are load-bearing
@@ -77,7 +117,7 @@ The concurrency case must be tested with genuinely parallel requests. A
 sequential loop passes whether or not the lock exists:
 
 ```
-scripts/seed_transactions.py --url <webapp-url> --concurrent-buy "Man Mo Temple"
+scripts/seed_transactions.py --url <webapp-url> --keys-csv <team-keys.csv> --concurrent-buy "Man Mo Temple"
 ```
 
 Expected: two teams buying the same landmark at once are charged 1.00x and

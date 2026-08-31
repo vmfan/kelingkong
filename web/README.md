@@ -3,8 +3,15 @@
 One self-contained HTML file. No build step, no framework, no login. Indonesian, because
 participants read it (`CLAUDE.md`).
 
-Open `index.html?tim=7` — the team number comes from the URL and is remembered in
+Open `index.html?tim=7&key=...` — both come from the URL and are remembered in
 `localStorage`, so a reopened tab still knows who you are. One QR code per team map.
+
+**`key` is required, added 2026-08-31.** Without it (or with the wrong one), every
+submission is rejected server-side (`Code.gs`'s `bad_key` guard) — this stops a team from
+guessing/typing another team's number and submitting as them. Generate the 25 keys with
+`python3 ../scripts/generate_team_keys.py`, paste its `team,key` output into the Sheet's
+`TeamKeys` tab, and use its URL list (not a bare `?tim=N`) to generate the printed QR
+codes. See `docs/2026/operations.md` item 25.
 
 ## Hosting
 

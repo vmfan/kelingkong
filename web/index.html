@@ -245,6 +245,12 @@ const params = new URLSearchParams(location.search);
 let TEAM = parseInt(params.get("tim") || localStorage.getItem("kk.team") || "0", 10);
 if (TEAM) localStorage.setItem("kk.team", String(TEAM));
 
+// Printed on the same QR code as ?tim=, so a legitimate scan always carries both.
+// Sent with every submission and checked server-side (Code.gs's bad_key guard) so
+// typing/guessing another team's number isn't enough to submit as them.
+let KEY = params.get("key") || localStorage.getItem("kk.key") || "";
+if (params.get("key")) localStorage.setItem("kk.key", KEY);
+
 let DATA = { harga:[], milik:[], tim:[], klasemen:[], aktivitas:[], objek:[] },
     LAST_OK = 0, view = "harga";
 // Active surprise mission, from the live ?misi=1 read — MISI.now/deadline are server
@@ -682,7 +688,7 @@ $("#d-go").onclick = async () => {
   const payload = {
     submissionId: (crypto.randomUUID ? crypto.randomUUID()
       : String(Date.now()) + Math.random()),
-    team: TEAM, action: pending.kind, item: pending.item,
+    team: TEAM, key: KEY, action: pending.kind, item: pending.item,
   };
   if (photo) payload.photo = photo;
   try{
