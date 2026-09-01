@@ -19,9 +19,9 @@ log entry — read that first if anything here seems arbitrary. Short version:
 
 - Each mission gets a 20-minute window from when the committee issues it (widened from 15 on
   2026-08-20 — see "Broadcast schedule" below for why).
-- Any team without an un-voided completion photo by the deadline is deducted a flat KD amount.
+- Any team without an un-voided completion photo/video by the deadline is deducted a flat KD amount.
 - There is no reward for completing a mission — completing just avoids the deduction.
-- If a submitted mission photo is later voided by a banker (Kontrol review), the deduction
+- If a submitted mission photo/video is later voided by a banker (Kontrol review), the deduction
   re-applies, even though it looked avoided at the deadline.
 
 ## Prerequisite reading
@@ -157,9 +157,9 @@ branch. Reuse everything the existing types already do — this needs no new sub
   retry, double-tap) is a no-op, not a double credit. There is no credit to double here (no
   reward on success), but the *done* state still needs to be idempotent so the participant page
   doesn't show a resubmit as a fresh, still-pending action.
-- **Same universal photo requirement** — `operations.md` states a photo is required for every
-  action; `doPost` already rejects a photoless `buy`/`task`/`object`, extend that check to
-  `mission`.
+- **Same universal photo/video requirement** — `operations.md` states photo or video proof is
+  required for every action; `doPost` already rejects a proofless `buy`/`task`/`object`,
+  extend that check to `mission`.
 - **Validate `item` against the `Missions` tab**, not `data/landmarks.csv`: reject (flag
   `pending`/invalid, same as an unrecognized landmark today) a `mission_id` that doesn't exist
   in `Missions`, or whose `deadline` has already passed at write time — a late submission still

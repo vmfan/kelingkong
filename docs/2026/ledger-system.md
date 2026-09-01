@@ -74,7 +74,11 @@ collapses both into a single failure, and reads are what 250 people depend on co
 3. **The team learns what it paid immediately** rather than waiting for the board to refresh.
 4. **Client-side photo downscale** to ~200 KB instead of a 4 MB original. Across ~550
    submissions that is ~3 GB → ~150 MB, which matters for mobile data and for the free
-   15 GB Drive tier.
+   15 GB Drive tier. **Added 2026-08-31:** submissions can also carry video, which has no
+   canvas-equivalent client-side compression — those upload uncompressed, capped at 20 MB
+   client- and server-side. This budget no longer holds uniformly if a meaningful share of
+   submissions are video instead of photo; sanity-check Drive headroom against actual video
+   usage before the event rather than assuming the ~150 MB figure still applies.
 5. **It removes the hardest formula from the Sheet.** Price is resolved at write time and
    written into the row, so `Ledger` and `Standings` reduce to `SUMIFS` and `COUNTIFS`.
 
@@ -213,13 +217,13 @@ basis.
 
 ---
 
-## Photo verification: post-hoc review, not an approval gate (2026-08-19)
+## Photo/video verification: post-hoc review, not an approval gate (2026-08-19)
 
 Photos were stored to Drive and never looked at, and a written transaction could not be undone.
 The exploit that opens is not marginal: board task income totals **450 KD**, three times the
-150 KD starting allowance, so a team submitting fake photos from a café could farm the whole
-board in ~25 minutes without moving — strictly better than the farm-and-leave gap already
-tracked as open item 21.
+150 KD starting allowance, so a team submitting fake photos (or, since 2026-08-31, fake video)
+from a café could farm the whole board in ~25 minutes without moving — strictly better than
+the farm-and-leave gap already tracked as open item 21.
 
 **Bankers review after the fact and void what is wrong. Nothing waits on a human.**
 

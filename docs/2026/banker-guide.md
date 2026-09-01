@@ -1,13 +1,17 @@
 # Banker guide — D-Day
 
-Internal. For the standby banker pool working photo review on event day. Answers item 22
+Internal. For the standby banker pool working photo/video review on event day. Answers item 22
 in `operations.md`.
 
 ## What you're doing
 
 Submissions post and score the instant a team sends them — nothing waits on you. Your job is
-to look at the photo *after the fact* and catch the rare bad one, not to approve anything
-before it counts. See `ledger-system.md` for why it works this way.
+to look at the photo or video *after the fact* and catch the rare bad one, not to approve
+anything before it counts. See `ledger-system.md` for why it works this way.
+
+**Video takes longer to review than a glance at a photo** — you have to actually watch it,
+not just eyeball a thumbnail. Budget for that when you're working the queue; it's a real
+time cost to the banker pool, not just a wording change from "photo."
 
 ## What you can see and touch
 
@@ -27,19 +31,19 @@ into the whole column touches all ~2000 rows and leaves the tab full of false ti
 ## Working the queue
 
 Open `Kontrol`, block 7, **`ANTRIAN VERIFIKASI`**. It lists every `ok` transaction whose
-`diperiksa` box is still unticked, oldest first, with a link to the photo. The header shows
-how many are backlogged.
+`diperiksa` box is still unticked, oldest first, with a link to the photo or video. The
+header shows how many are backlogged.
 
 For each row:
 
-1. Open the photo.
-2. **A good photo shows the whole team at the landmark** — recognizable people, recognizable
-   location. If you can't tell it's this team at this landmark, it's not good enough to pass
-   silently.
-3. **Ticking `diperiksa` only means "I looked at this."** It does not undo anything. If the
-   photo is fine (or borderline but plausible), tick it and move to the next row.
-4. **If the photo is clearly wrong** — wrong landmark, no team visible, reused/duplicate
-   photo, or obviously staged — void the row instead of ticking it.
+1. Open the photo or video.
+2. **A good submission shows the whole team at the landmark** — recognizable people,
+   recognizable location. If you can't tell it's this team at this landmark, it's not good
+   enough to pass silently.
+3. **Ticking `diperiksa` only means "I looked at this."** It does not undo anything. If it's
+   fine (or borderline but plausible), tick it and move to the next row.
+4. **If it's clearly wrong** — wrong landmark, no team visible, reused/duplicate media, an
+   unplayable/corrupt file, or obviously staged — void the row instead of ticking it.
 
 ## Voiding a bad transaction
 
@@ -59,13 +63,13 @@ recharges anyone. A team can buy the same landmark again after a void.
 
 You're mainly working block 7, but the other six blocks surface things worth a glance if
 you have spare capacity: negative balances, a team silent for 90+ minutes, stuck `pending`
-rows, failed photo uploads, rejected submissions with their reason, and physically
+rows, failed media uploads, rejected submissions with their reason, and physically
 impossible travel between two consecutive submissions. None of these need action from you
 beyond flagging to committee/floaters — `Kontrol` is empty when everything's fine, so
 anything showing there is worth a look.
 
 ## When in doubt
 
-If a photo is ambiguous, or you're unsure whether to void, don't guess — flag it to
+If a photo or video is ambiguous, or you're unsure whether to void, don't guess — flag it to
 committee/floaters rather than voiding on a hunch. A wrongful void is visible to the team
 immediately and is confusing to explain after the fact.

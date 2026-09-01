@@ -41,6 +41,7 @@ const CONFIG = {
   POST_PAYOUT: { win: 40, lose: 20 },
   OBJECT_PAYOUT: 5,
   TASK_RATE: 0.30,
+  MEDIA_MAX_BYTES: 20 * 1024 * 1024,       // mirrors web/index.html's VIDEO_MAX_BYTES
   // economy.md calibration log, 2026-08-19: Kai Tak's 4 landmarks pay 50%, not 30%.
   // Board!F carries the same numbers for display, but this is what actually pays --
   // lookupLandmark reads only name/district/base_price/aliases, never the income column.
@@ -495,12 +496,27 @@ function norm(s) {
   return String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+// Extension per MIME subtype so a video lands in Drive playable, not disguised as a fake
+// .jpg. Falls back to the raw subtype for anything not listed (e.g. 'ogg' -> '.ogg').
+const EXT_BY_SUBTYPE = {
+  jpeg: 'jpg', png: 'png', gif: 'gif', webp: 'webp',
+  mp4: 'mp4', webm: 'webm', quicktime: 'mov',
+};
+
 function savePhoto(dataUrl, team, action, item, submissionId) {
-  const m = /^data:(image\/[a-z+]+);base64,(.*)$/i.exec(dataUrl);
+  const m = /^data:((?:image|video)\/[a-z0-9.+-]+);base64,(.*)$/i.exec(dataUrl);
   if (!m) throw new Error('photo is not a data URL');
+  // Cheap size check before base64-decoding a possibly-huge string: base64 is ~4/3 the
+  // decoded byte count, so this estimate is conservative enough to fail fast on an
+  // oversized upload rather than spend time decoding it just to throw afterward.
+  if (m[2].length * 0.75 > CONFIG.MEDIA_MAX_BYTES) {
+    throw new Error('media exceeds ' + Math.round(CONFIG.MEDIA_MAX_BYTES / (1024 * 1024)) + 'MB limit');
+  }
+  const subtype = m[1].split('/')[1].toLowerCase();
+  const ext = EXT_BY_SUBTYPE[subtype] || subtype;
   const blob = Utilities.newBlob(
     Utilities.base64Decode(m[2]), m[1],
     ['tim' + team, action, item.replace(/[^\w -]/g, ''), submissionId.slice(0, 8)]
-      .join('_') + '.jpg');
+      .join('_') + '.' + ext);
   return DriveApp.getFolderById(CONFIG.PHOTO_FOLDER_ID).createFile(blob).getUrl();
 }

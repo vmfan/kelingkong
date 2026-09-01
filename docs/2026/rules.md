@@ -26,8 +26,8 @@ Tim dengan **total nilai properti + sisa uang** terbanyak di akhir hari adalah p
 2. Kerjakan **tugas di lokasi** (foto, teka-teki, atau mencari detail tertentu), lalu kirim
    lewat **halaman Kelingkong** — scan QR di peta tim kalian. Tugas ini memberi kalian uang;
    **jumlahnya tertulis di daftar harga kalian**.
-3. Kalau mau membelinya, tekan **Beli** di halaman yang sama — sertakan **foto tim kalian di
-   landmark itu**, sama seperti waktu mengerjakan tugas.
+3. Kalau mau membelinya, tekan **Beli** di halaman yang sama — sertakan **foto atau video
+   tim kalian di landmark itu**, sama seperti waktu mengerjakan tugas.
 4. Halaman itu langsung memberi tahu **berapa yang kalian bayar dan sisa uang kalian**, dan
    landmark itu jadi milik kalian.
 
@@ -141,31 +141,33 @@ selalu diawali **🚨 RAZIA PAJAK** supaya mudah dikenali di tengah chat yang ra
 - Begitu misi keluar, buka halaman Kelingkong — akan muncul **kotak hitung mundur** khusus
   untuk misi itu.
 - Kalian punya **20 menit** dari saat misi dikirim untuk menyelesaikannya dan mengirim
-  foto lewat kotak itu, sama seperti tugas dan pembelian.
-- **Kalau sampai waktu habis tim kalian belum mengirim foto, tim kalian didenda [TBD] KD.**
+  foto atau video lewat kotak itu, sama seperti tugas dan pembelian.
+- **Kalau sampai waktu habis tim kalian belum mengirim foto atau video, tim kalian didenda [jumlah belum final — draft panitia: 10 KD].**
   Ini bukan bonus — menyelesaikan misi tidak menambah nilai, hanya menghindari dendanya.
-- Sama seperti pengiriman lain, foto misi tetap diperiksa panitia. Kalau ternyata fotonya
-  tidak sah, dendanya berlaku lagi meskipun tadinya sempat terkirim tepat waktu.
+- Sama seperti pengiriman lain, foto/video misi tetap diperiksa panitia. Kalau ternyata
+  buktinya tidak sah, dendanya berlaku lagi meskipun tadinya sempat terkirim tepat waktu.
 
 **Jadi begitu ada pesan 🚨 RAZIA PAJAK, langsung buka halaman Kelingkong dan cek kotak
 hitung mundurnya.**
 
-## 6. Objects to Find
+## 6. Objek untuk Dibuktikan
 
-Beberapa benda khas Hong Kong yang bisa kalian foto di mana saja — **daftar lengkap dan
-nilainya ada di halaman Kelingkong**, bagian "Objek", karena daftarnya bisa berubah sampai
-hari-H.
+Beberapa benda khas Hong Kong yang bisa kalian foto atau video-kan di mana saja — **daftar
+lengkap dan nilainya ada di halaman Kelingkong**, bagian "Objek", karena daftarnya bisa
+berubah sampai hari-H.
 
-Sekali per tim per objek — kirim fotonya lewat halaman Kelingkong, sama seperti tugas.
+Sekali per tim per objek — kirim buktinya lewat halaman Kelingkong, sama seperti tugas.
 Cocok dikerjakan sambil jalan atau sambil menunggu sesi pos berikutnya.
 
 ## 7. Hal-hal penting
 
 - **Batas akhir semua pengiriman: 16:30.**
-- Semua anggota tim harus ada di dalam foto supaya tugas **dan pembelian** dihitung.
-- **Semua foto diperiksa panitia.** Kalau fotonya tidak menunjukkan tim kalian berada di
-  landmark itu, pengiriman kalian **dibatalkan** — uangnya ditarik kembali dan landmark-nya
-  tidak jadi milik kalian. Jadi jangan kirim foto lama atau foto tempat lain.
+- Semua anggota tim harus ada di dalam foto atau video supaya tugas **dan pembelian** dihitung.
+- **Semua foto dan video diperiksa panitia.** Kalau buktinya tidak menunjukkan tim kalian
+  berada di landmark itu, pengiriman kalian **dibatalkan** — uangnya ditarik kembali dan
+  landmark-nya tidak jadi milik kalian. Jadi jangan kirim foto/video lama atau dari tempat
+  lain. Video dibatasi maksimal **20 MB** — kalau ditolak karena kebesaran, rekam ulang
+  lebih pendek.
 - Halaman Kelingkong bisa dibuka kapan saja — harga terbaru, daftar milik tim kalian,
   dan klasemen. Kalian selalu tahu posisi tim kalian.
 - Kumpul kembali di titik akhir untuk penutupan dan pengumuman.
@@ -189,7 +191,8 @@ atau simpan uangnya?
 
 1. Kalian punya 150 KD.
 2. Kerjakan tugas di landmark untuk dapat uang, lalu beli landmark-nya — semuanya lewat
-   **halaman Kelingkong**, scan QR di peta tim kalian. Selalu pakai foto tim di lokasi.
+   **halaman Kelingkong**, scan QR di peta tim kalian. Selalu pakai foto atau video tim di
+   lokasi.
 3. **Beli 2 landmark di satu distrik, lalu pindah ke distrik lain di sisi yang beda (HK
    Island / Kowloon / East Kowloon). Ulangi sampai 3 distrik.** Itu strateginya — kalau
    distrik kalian semua di sisi yang sama, pengali kalian mentok di ×1.4.
@@ -197,4 +200,4 @@ atau simpan uangnya?
 5. Mampir ke pos permainan kalau sempat — hadiahnya lumayan, dan kalian ketemu tim lain.
 6. Kalau ada pesan **🚨 RAZIA PAJAK** di grup chat, langsung buka halaman Kelingkong — kalian
    punya 20 menit sebelum kena denda.
-6. Selesai jam 16:30. Santai saja, 6 landmark sudah bagus.
+7. Selesai jam 16:30. Santai saja, 6 landmark sudah bagus.

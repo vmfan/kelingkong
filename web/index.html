@@ -99,9 +99,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .dlg{padding:17px}
 .dlg h2{margin:0 0 3px; font-size:18px; font-family:Georgia,"Times New Roman",serif}
 .dlg .why{color:var(--dim); font-size:13.5px; margin-bottom:13px}
-.shot{width:100%; padding:24px 12px; border:2px dashed var(--line); border-radius:12px;
+.shot{display:block; width:100%; padding:24px 12px; border:2px dashed var(--line); border-radius:12px;
   background:#fafafa; text-align:center; color:var(--dim); font-weight:600; margin-bottom:12px}
-.shot img{max-width:100%; border-radius:9px; display:block}
+.shot img,.shot video{max-width:100%; border-radius:9px; display:block}
 .res{padding:11px 12px; border-radius:10px; margin-bottom:12px; font-weight:600}
 .res.ok{background:#e8f6ec; color:var(--good)}
 .res.no{background:#fdeceb; color:var(--bad)}
@@ -192,8 +192,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   <div class="why" id="d-why"></div>
   <div id="d-res"></div>
   <label class="shot" id="d-shot">
-    📷 Ambil foto tim di lokasi
-    <input type="file" accept="image/*" capture="environment" id="d-file" hidden>
+    📷 Ambil foto atau video tim di lokasi
+    <input type="file" accept="image/*,video/*" capture="environment" id="d-file" hidden>
   </label>
   <div class="btns">
     <button value="cancel" type="submit" id="d-cancel">Batal</button>
@@ -230,6 +230,7 @@ const CONFIG = {
   MISI_POLL_MS: 8000,
   PHOTO_MAX_PX: 1200,
   PHOTO_QUALITY: 0.7,
+  VIDEO_MAX_BYTES: 20 * 1024 * 1024,
   // Fallback only, used while CSV.objek is blank or not yet publishing — not the source
   // of truth once the sheet exists. [name, KD] pairs, not finalized.
   OBJECTS: [["Cha Chaan Teng",5],["Dim Sum",5],["Bolo Bun",5],["Egg Waffle",5],
@@ -651,8 +652,8 @@ function act(kind, item, label){
     ? "Foto bukti misi ini. Kirim sebelum waktu habis supaya tidak kena denda."
     : "Semua anggota tim harus ada di dalam foto.";
   $("#d-res").innerHTML = "";
-  $("#d-shot").innerHTML = "📷 Ambil foto tim di lokasi" +
-    '<input type="file" accept="image/*" capture="environment" id="d-file" hidden>';
+  $("#d-shot").innerHTML = "📷 Ambil foto atau video tim di lokasi" +
+    '<input type="file" accept="image/*,video/*" capture="environment" id="d-file" hidden>';
   wireFile();
   $("#d-go").disabled = false; $("#d-go").textContent = "Kirim";
   $("#dlg").showModal();
@@ -661,6 +662,29 @@ function act(kind, item, label){
 function wireFile(){
   $("#d-file").onchange = e => {
     const f = e.target.files[0]; if (!f) return;
+
+    if (f.type.startsWith("video/")){
+      // No canvas-equivalent way to downscale video in-browser (drawImage/toDataURL only
+      // work on images), so a hard size cap is the only guard against a huge upload over
+      // mobile data and against an oversized Apps Script doPost body.
+      if (f.size > CONFIG.VIDEO_MAX_BYTES){
+        $("#d-res").innerHTML = '<div class="res no">Video terlalu besar (maks ' +
+          Math.round(CONFIG.VIDEO_MAX_BYTES / (1024*1024)) +
+          ' MB). Rekam ulang lebih pendek, lalu coba lagi.</div>';
+        e.target.value = "";
+        return;
+      }
+      const rd = new FileReader();
+      rd.onload = () => {
+        photo = rd.result;
+        $("#d-shot").innerHTML = '<video src="' + photo + '" controls playsinline></video>' +
+          '<input type="file" accept="image/*,video/*" capture="environment" id="d-file" hidden>';
+        wireFile();
+      };
+      rd.readAsDataURL(f);
+      return;
+    }
+
     const img = new Image(), rd = new FileReader();
     rd.onload = () => { img.onload = () => {
       // Downscaled on the phone: a 4 MB original over mobile data is the slowest part
@@ -671,7 +695,7 @@ function wireFile(){
       c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
       photo = c.toDataURL("image/jpeg", CONFIG.PHOTO_QUALITY);
       $("#d-shot").innerHTML = '<img src="' + photo + '" alt="">' +
-        '<input type="file" accept="image/*" capture="environment" id="d-file" hidden>';
+        '<input type="file" accept="image/*,video/*" capture="environment" id="d-file" hidden>';
       wireFile();
     }; img.src = rd.result; };
     rd.readAsDataURL(f);

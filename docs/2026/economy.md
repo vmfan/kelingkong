@@ -274,7 +274,7 @@ Decided 2026-08-20 (see Calibration log). Committee-broadcast ad-hoc tasks durin
 carried over from 2025 (`docs/2025/format.md:61`) but rekeyed from reward to penalty.
 
 **Mechanic:** each mission has a 20-minute window from broadcast. Any team without an
-un-voided completion photo by the deadline is deducted a flat KD amount at `Standings`.
+un-voided completion photo or video by the deadline is deducted a flat KD amount at `Standings`.
 There is no reward for completing one — completing just avoids the penalty.
 
 **Why 20, not 15:** widened from the original 15 minutes (`docs/2026/missions-build-spec.md`,
@@ -294,7 +294,7 @@ board-wide constant, so the committee can vary it per mission or change it mid-e
 a rules or code change. Neither this number nor which of the five 2025-style missions carry
 over is locked — both remain the committee's call, same as `[TBD]` prices before playtest.
 
-**Retroactive voiding:** if a submitted mission photo is later voided by Kontrol, the
+**Retroactive voiding:** if a submitted mission photo/video is later voided by Kontrol, the
 penalty re-applies. This needs no new mechanism — the `Standings` condition checks "team has
 an *un-voided* submission for this mission," not merely "team has a submission," so a later
 void simply flips a live formula back to its penalized state on its own.

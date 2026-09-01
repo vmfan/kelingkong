@@ -115,19 +115,19 @@ hand-tallied score sheet, which was only ever built out for 3 of 21 groups.
 | **Read** | Four published tabs → static participant page | Page dies; the Sheet is unaffected and still authoritative |
 
 **Submission** — one per action: team ID · action (`buy` / `task` / `object` / `post` /
-`mission`) · landmark, object or mission id · photo. The write layer resolves the ladder
-price, checks affordability, rejects duplicates and post-deadline submissions, and tells the
-team what it paid on the spot.
+`mission`) · landmark, object or mission id · photo or video. The write layer resolves the
+ladder price, checks affordability, rejects duplicates and post-deadline submissions, and
+tells the team what it paid on the spot.
 
 **Apps Script rather than a Google Form, for one decisive reason:** a Form carrying a
 file-upload question forces every respondent to sign in to a Google account, with no
-anonymous option. Since the photo is required on every action (below), the Form design walks
-25 teams into a login wall at 10:45. See `ledger-system.md`.
+anonymous option. Since photo/video proof is required on every action (below), the Form
+design walks 25 teams into a login wall at 10:45. See `ledger-system.md`.
 
-**The photo is required on every action, including `buy`.** `buy` and `task` are logged as
+**Photo or video proof is required on every action, including `buy`.** `buy` and `task` are logged as
 independent submissions, so without this a team could earn task money at one landmark and
 buy a different one it never visited — undercutting `event-brief.md`'s goal of getting teams
-to see parts of Hong Kong they wouldn't find on their own. Requiring the photo on `buy`
+to see parts of Hong Kong they wouldn't find on their own. Requiring proof on `buy`
 itself closes that gap directly, rather than adding a separate no-gain "presence" task:
 it costs zero new concepts in `rules.md` and doesn't add a second Form submission per
 purchase for volunteers to review — volunteers, not participants, are this event's binding
@@ -160,21 +160,22 @@ are immune. Do not "tidy" them back.
 
 **`Kontrol` surfaces seven conditions**, and shows nothing when all is well: negative balance ·
 team with no submission in 90 minutes · `pending` rows where the script died mid-transaction ·
-failed photo uploads · rejected submissions with their reason · **physically impossible travel** ·
-**the photo-verification queue**. The 90-minute check is the only mid-day signal that a team has
+failed media uploads · rejected submissions with their reason · **physically impossible travel** ·
+**the photo/video-verification queue**. The 90-minute check is the only mid-day signal that a team has
 stalled, which the design otherwise cannot detect.
 
-### Photo verification and voiding
+### Photo/video verification and voiding
 
-Photos are stored but were never looked at, and until 2026-08-19 a written transaction could not
-be undone. Both are now addressed — **after the fact, not as an approval gate**. A submission
-still posts and scores the instant it arrives; nothing waits on a human. See `ledger-system.md`
-for why gating on approval is incompatible with the price ladder.
+Photos and videos are stored but were never looked at, and until 2026-08-19 a written
+transaction could not be undone. Both are now addressed — **after the fact, not as an
+approval gate**. A submission still posts and scores the instant it arrives; nothing waits
+on a human. See `ledger-system.md` for why gating on approval is incompatible with the
+price ladder.
 
 **Block 7, `ANTRIAN VERIFIKASI`,** lists every `ok` row whose `diperiksa` checkbox
-(`Transactions!M`) is unticked, oldest first, with a link to the photo. Bankers work the queue
-and tick as they go; the header carries the backlog count. The checkbox is the *only* column an
-operator writes in `Transactions`.
+(`Transactions!M`) is unticked, oldest first, with a link to the photo or video. Bankers work
+the queue and tick as they go; the header carries the backlog count. The checkbox is the
+*only* column an operator writes in `Transactions`.
 
 **Block 6, `PERPINDAHAN TIDAK MUNGKIN`,** flags a team whose two most recent landmark
 submissions are further apart than the elapsed time allows, using `|eta_a − eta_b|` from
