@@ -127,8 +127,6 @@ Requirements, in order of how hard they are to retrofit:
    everyone-participates formats work. Anything fiddly or equipment-heavy does not.
 3. **Works head-to-head *and* solo against par.** If a game only makes sense with an
    opponent, it breaks the moment a single team turns up.
-4. **Mixes the two teams where possible.** Two teams competing as blocks is fine; two
-   teams shuffled into mixed sides is far better for the social goal.
 
 ## Optional: suggested slots
 
