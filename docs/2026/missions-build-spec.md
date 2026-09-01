@@ -64,13 +64,15 @@ separate decision, not implied by pre-scheduling alone.
 | `deadline` | datetime | `issued_at + 20 minutes`, formula or manual (widened from 15 on 2026-08-20 — see "Broadcast schedule") |
 | `penalty_kd` | number | KD deducted per team that misses this mission. **Per-mission, not a board-wide constant** — the committee can vary it mission to mission. 10 is the current working default (see "What's still open") |
 
-~5 rows/day at 2025's pace. No headcount implication — populating a row and sending the
+~4 rows/day (2025 ran five — see "Broadcast schedule" and `economy.md`'s 2026-08-31
+calibration log entry for why 2026 drops to four). No headcount implication — populating a row and sending the
 `🚨 RAZIA PAJAK` chat message (`operations.md`, Briefing the leaders) is the entire committee
 action per mission.
 
 ## Broadcast schedule
 
-**Decided 2026-08-20, revised same day.** *When* the five missions fire, independent of what
+**Decided 2026-08-20, revised same day, revised again 2026-08-31 (five missions → four).**
+*When* the missions fire, independent of what
 they say (mission text and `penalty_kd` stay open — see "What's still open" below). Built
 against `operations.md`'s rundown: dispersal 10:30, first heats 10:45, lunch ~12:00–13:30,
 last heats 16:00, Form close 16:30.
@@ -104,13 +106,19 @@ this treats the clash as closed rather than merely mitigated.
 
 ### Schedule
 
+**Revised 2026-08-31 — reduced from five missions to four.** The original five-mission
+schedule (below, struck through in spirit not in table form — see the calibration log entry
+in `economy.md`, 2026-08-31) packed M2–M5 into a 13:44–15:49 span: four of five missions in
+under two hours, while the rest of the day carried only one. Dropping to four and evening out
+the afternoon gaps to 45 minutes apiece removes the cluster without touching any constraint
+below.
+
 | Mission | `issued_at` | `deadline` (20 min) | Rationale |
 |---|---|---|---|
 | M1 | 10:59 | 11:19 | ~29 min after dispersal, 1 min before the 11:00 heat — teams have reached a first landmark, well clear of lunch |
 | M2 | 13:44 | 14:04 | Earliest slot on this offset that's fully clear of lunch (`issued_at ≥ 13:30`) |
 | M3 | 14:29 | 14:49 | +45 min |
-| M4 | 14:59 | 15:19 | +30 min |
-| M5 | 15:29 | 15:49 | +30 min — 41 min clear of the 16:30 Form close, and ends before the 16:00 last-heats crunch even starts |
+| M4 | 15:14 | 15:34 | +45 min — even spacing with M3 (was +30/+30 into a fifth mission at 15:29 before this revision). 56 minutes clear of the 16:30 Form close, and still finishes well before the 16:00 last-heats crunch |
 
 Constraints that produced these times, so a future reader can re-derive them if the rundown
 shifts (`operations.md` open item 1, "Confirm event timings against venue"):
@@ -122,7 +130,10 @@ shifts (`operations.md` open item 1, "Confirm event timings against venue"):
   used above.
 - **Nothing before ~11:00.** Teams need time to actually reach their first landmark after the
   10:30 dispersal before the first mandate lands.
-- **Nothing after 15:29.** `deadline` (15:49) leaves 41 minutes of clear runway before the
+- **Afternoon missions evenly spaced at 45 minutes**, not packed toward the lunch-end
+  boundary. The three afternoon slots (13:44 / 14:29 / 15:14) fill the safe afternoon range
+  end to end rather than clustering early with a long gap before the Form close.
+- **Nothing after ~15:14.** `deadline` (15:34) leaves 56 minutes of clear runway before the
   16:30 Form close and finishes before the 16:00 last-heats crunch entirely, so a team that
   misses this one at the buzzer still has time to travel and submit before the Form closes.
 - **Times land on `:59`/`:14`/`:29`/`:44`** — one minute *before* the next heat's
@@ -132,16 +143,17 @@ shifts (`operations.md` open item 1, "Confirm event timings against venue"):
   this one skews more teams into the generous case when a heat is in progress at broadcast
   time.
 
-Gaps between missions are uneven on purpose (20 min, then a lunch-spanning gap, then 45 / 30
-/ 30) — the spacing follows the constraints above, not a fixed cadence. Any other 15-minute
-increment on the same `:14/:29/:44/:59` phase that respects the lunch and end-of-day bounds
-works equally well; this is one valid solution, not the only one.
+Gaps between missions: a lunch-spanning gap between M1 and M2, then an even 45 minutes
+between each afternoon mission. Any other 15-minute increment on the same
+`:14/:29/:44/:59` phase that respects the lunch and end-of-day bounds works equally well;
+this is one valid solution, not the only one — but it should stay *even*, per the 2026-08-31
+revision, rather than reintroduce a cluster.
 
-**Applied to the live Sheet, 2026-08-20.** `Missions!deadline`'s formula is now `issued_at +
-20 min`, and the five `issued_at` values above are pre-filled as `M1`–`M5` (`mission_id`,
-`issued_at` only — `text` and `penalty_kd` left for the committee, as planned). Verified
-against the deployed endpoint at the 19-of-20-minute boundary, where the prior `+15` formula
-would already have expired. Full record in `ledger-system.md`.
+**Applied to the live Sheet, 2026-08-31.** The 2026-08-20 pass had pre-filled a five-mission
+version of this schedule (`M1`–`M5`: 10:59 / 13:44 / 14:29 / 14:59 / 15:29 — see
+`ledger-system.md`, "Window widened to 20 minutes, schedule pre-filled"). Re-applied to match
+the four-mission schedule above: `M5` row deleted, `M4`'s `issued_at` retimed from `14:59` to
+`15:14`, `deadline` left as the existing `issued_at + 20 min` formula. `M1`–`M3` untouched.
 
 ## 2. `doPost`: new `action = "mission"`
 
@@ -278,7 +290,7 @@ Before this goes live, at minimum:
    recalculation without any manual intervention.
 3. **Confirm `?misi=1` degrades safely** when no mission is active and when `Missions` is
    empty — the participant page must never show a stale or wrong countdown.
-4. **Load-check** is not really needed here — 5 missions × 25 teams is negligible next to the
+4. **Load-check** is not really needed here — 4 missions × 25 teams is negligible next to the
    ~550 submissions/day, 0.6 submissions/sec the write layer is already tested against
    (`ledger-system.md`: "Verified 2026-08-19" throughput section).
 

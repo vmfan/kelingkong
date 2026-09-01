@@ -361,3 +361,10 @@ Applied `missions-build-spec.md`'s "Broadcast schedule" section to the live Shee
   as still active (`?misi=1` returned `active: true`, ~48s left) — under the prior `+15`
   formula that window would already have closed 4 minutes earlier. Confirmed the five
   pre-filled event-day rows correctly read `active: false` today, same as an empty tab.
+
+**Superseded 2026-08-31, re-applied same day.** The five-mission schedule pre-filled above was
+replaced: `missions-build-spec.md`'s "Broadcast schedule" now specifies four missions (`M5`
+dropped, `M4` retimed 14:59→15:14); see `economy.md`'s 2026-08-31 calibration log entry for
+why. Live `Missions` tab updated to match — `M5` row removed, `M4`'s `issued_at` retimed to
+15:14 (2026-09-12), `deadline` unchanged as a formula (`issued_at + 20 min`). `M1`–`M3`
+untouched.
