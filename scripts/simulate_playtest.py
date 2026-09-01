@@ -5,7 +5,7 @@ There is no field run this year (committee is away for the summer, see
 docs/2026/simulated-playtest.md) and the design-interview fallback in playtest.md also
 did not happen. This script answers the *economic* pre-registered questions in
 economy.md ("What the playtest must measure") and playtest.md (Part 3) by simulating
-25 teams competing over the board in data/landmarks.csv and data/districts.csv.
+21 teams competing over the board in data/landmarks.csv and data/districts.csv.
 
 It does NOT answer the comprehension questions (playtest.md Stages 1-3) — those test
 whether a human reads rules.md and discovers clustering/crossing unprompted, which no
@@ -40,7 +40,7 @@ SIDES_BONUS_THRESHOLD = 3  # all 3 sides; only value that means anything with 3 
 SIDES_BONUS_MULTIPLIER = None  # e.g. 2.0 to enable a bonus tier layered on the 2-sides floor
 TASK_INCOME_RATE = 0.3  # rules.md: "30% of that landmark's base price", the live board rate
 KAI_TAK_TASK_RATE = None  # e.g. 0.6 to test a Kai Tak-only task-income boost, Board-only
-TEAMS = 25
+TEAMS = 21
 STARTING_DISTRICTS = [
     "Admiralty", "Wan Chai", "Causeway Bay", "TST Central",
     "Central", "Mongkok", "Sheung Wan", "TST Waterfront",

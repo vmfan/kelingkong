@@ -67,8 +67,8 @@ pricing logic and `operations.md` for the assignment mechanism.
 | Area | Decision |
 |---|---|
 | Date | Saturday 12 September 2026 |
-| Participants | 250 baseline |
-| Teams | 25 teams of 10, 2 leaders each (~50 leaders) |
+| Participants | 210 baseline |
+| Teams | 21 teams of 10, 2 leaders each (~42 leaders) — fixed 2026-09-01, holding at the 2025 team count rather than the 25 this table originally targeted; see "Group size" below |
 | Target pace | 5–6 landmarks owned per team |
 | Value model | Set bonuses keyed on **districts held** (2+ landmarks each): ×1.4 / ×1.6 / ×1.8 for 1 / 2 / 3+, capped at ×1.4 unless held districts span 2+ sides |
 | Ownership | Non-exclusive, rising price capped at 2.5×, first buyer holds the title |
@@ -99,10 +99,14 @@ Hong Kong.
 
 ## What this does not fix
 
-**Group size.** 25 teams of 10 holds the 2025 level; it does not improve it. *"Group
-terlalu rame"* was the first complaint in the retro, at exactly 10 per team. No mechanic
-here touches it — team size is a function of how many leaders get recruited, so it is a
-recruitment decision. Getting to 8–9 per team means 28+ teams and ~56 leaders.
+**Group size.** This table originally targeted 25 teams of 10 — a *growth* from 2025's 21
+— on the hope that recruitment would clear ~50 leaders. **Fixed 2026-09-01 at 21 teams of
+10**, the same team count as 2025: recruitment held flat rather than growing. Either way,
+group size itself stays at 10, unimproved. *"Group terlalu rame"* was the first complaint
+in the retro, at exactly 10 per team. No mechanic here touches it — team size is a
+function of how many leaders get recruited, so it is a recruitment decision. Getting to
+8–9 per team means 28+ teams and ~56 leaders — further out of reach at 21 teams than it
+was at the hoped-for 25.
 
 ## Where things are
 

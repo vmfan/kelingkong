@@ -753,9 +753,9 @@ document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
 $("#q").oninput = renderHarga;
 
 if (!TEAM){
-  const n = prompt("Nomor tim kalian (1-25)?");
+  const n = prompt("Nomor tim kalian (1-21)?");
   const v = parseInt(n, 10);
-  if (v >= 1 && v <= 25){ TEAM = v; localStorage.setItem("kk.team", String(v)); }
+  if (v >= 1 && v <= 21){ TEAM = v; localStorage.setItem("kk.team", String(v)); }
 }
 load();
 setInterval(load, CONFIG.REFRESH_MS);

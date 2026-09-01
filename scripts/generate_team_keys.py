@@ -13,12 +13,12 @@ hand. See docs/2026/operations.md's ledger section and CLAUDE.md for why volunte
 supervision, not cryptography, is this event's real backstop.
 
 Usage:
-    python3 scripts/generate_team_keys.py [--teams 25] [--base-url URL]
+    python3 scripts/generate_team_keys.py [--teams 21] [--base-url URL]
 
 Prints two blocks:
   1. `team,key` CSV, ready to paste into the Sheet's `TeamKeys` tab.
   2. One participant URL per team (`<base-url>?tim=N&key=...`), the direct input to
-     whatever generates the 25 QR images for the map print run (operations.md item 10).
+     whatever generates the 21 QR images for the map print run (operations.md item 10).
 
 Nothing here writes to data/ or the archive, and it never touches the live Sheet —
 copy its output in by hand, the same as every other manually-populated tab (`Board`,
@@ -40,7 +40,7 @@ def generate_key() -> str:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--teams", type=int, default=25, help="number of teams (default 25)")
+    ap.add_argument("--teams", type=int, default=21, help="number of teams (default 21)")
     ap.add_argument("--base-url", default=DEFAULT_BASE_URL,
                      help="participant page URL (default: the live GitHub Pages URL)")
     args = ap.parse_args()
@@ -49,7 +49,7 @@ def main():
     seen = set()
     for team in range(1, args.teams + 1):
         key = generate_key()
-        while key in seen:  # collision at 6 chars over 25 teams is astronomically unlikely
+        while key in seen:  # collision at 6 chars over 21 teams is astronomically unlikely
             key = generate_key()
         seen.add(key)
         keys[team] = key

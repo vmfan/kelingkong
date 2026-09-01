@@ -34,7 +34,7 @@ const CONFIG = {
   TIMEZONE: 'Asia/Hong_Kong',
   DEADLINE: '2026-09-12T16:30:00+08:00',  // operations.md rundown
   ALLOWANCE: 150,                          // economy.md — starting cash per team
-  TEAMS: 25,
+  TEAMS: 21,  // fixed 2026-09-01 -- 21 teams of 10, see operations.md item 26
   ESCALATION_PER_BUYER: 0.25,
   PRICE_CAP_MULTIPLE: 2.5,
   POST_COOLDOWN_MIN: 15,                   // game-posts.md, added 2026-08-18

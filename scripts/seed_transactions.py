@@ -25,7 +25,7 @@ The four checks, in order of how badly they fail in production:
                     produces no error at all — just quietly wrong prices all day.
   --idempotency     The same submission_id twice (double-tap, network retry). One charge.
   --cap             12 buyers of one landmark. Price stops at 2.5x, titleholder unchanged.
-  --load            A full simulated 25-team day, then compare the Sheet's standings against
+  --load            A full simulated 21-team day, then compare the Sheet's standings against
                     a local recomputation of the same transaction log.
 
 Does NOT cover: append-first ordering (needs a fault injected between the append and the
@@ -147,7 +147,7 @@ def check_concurrent_buy(url, landmark, n, photo):
 def check_idempotency(url, landmark, photo):
     """The same submission_id twice. The replay must not charge again."""
     print("\n=== idempotency: one submission_id, sent twice ===")
-    p = action(24, "buy", landmark, photo)
+    p = action(21, "buy", landmark, photo)  # last real team -- also exercises the TEAMS boundary
     first = post(url, p)
     second = post(url, dict(p))
     print(f"  first : ok={first.get('ok')} cost={first.get('cost')} bal={first.get('balance')}")
@@ -256,7 +256,7 @@ def main():
     ap.add_argument("--cap", metavar="LANDMARK")
     ap.add_argument("--load", action="store_true")
     ap.add_argument("--n", type=int, default=4, help="parallel buyers (default 4)")
-    ap.add_argument("--teams", type=int, default=25)
+    ap.add_argument("--teams", type=int, default=21)
     ap.add_argument("--with-photo", action="store_true",
                     help="attach a 1x1 GIF so the Drive write path is exercised too")
     ap.add_argument("--dry-run", action="store_true",
