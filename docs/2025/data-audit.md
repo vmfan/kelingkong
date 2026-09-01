@@ -94,13 +94,15 @@ The same place is spelled differently across tabs. Canonical forms chosen for 20
 | West Kowloon Art Park | `west Kowloon park`, `West kowloon art park` |
 | Mister Softee | `Mister Softie`, `Mister Softee` |
 | Kowloon Walled City Park | `Kowloon walled City Park` |
+| Vission Bakery | `Vission` |
 
-### Unresolved
+### Previously unresolved
 
-**`Vission`** (Rules tab, C47, HK Island, 4 points). Intended spelling unknown — possibly
-"The Vision", possibly a venue name that has since changed. **Not guessed.** Carried in
-`data/landmarks.csv` with a `notes` flag; needs a human who was there in 2025 to confirm
-before it goes on a printed map.
+**`Vission`** (Rules tab, C47, HK Island, 4 points) was carried with a `notes` flag because
+the intended spelling was unknown — possibly "The Vision," possibly a venue name that had
+since changed. **Resolved 2026-08-31**: confirmed by a committee member who was there in
+2025 to be **Vission Bakery**. `data/landmarks.csv` now uses that canonical name with
+`Vission` as an alias.
 
 ## 8. Landmarks brainstormed but never scored
 
