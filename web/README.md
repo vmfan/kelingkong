@@ -45,6 +45,11 @@ Local check: `python3 -m http.server 8765` then <http://localhost:8765/index.htm
 | `FAST_POLL_MS` | Live `?data=1` poll, default 3 s. This is the primary read path while the script is healthy |
 | `LIVE_TRUST_MS` | How long a live read owns the board, default 20 s. Raise it if the script is slow enough that the CSV keeps taking over |
 | `PENDING_TTL_MS` | How long an unconfirmed optimistic patch may survive, default 3 min |
+| `READ_TIMEOUT_MS` | Ceiling on every read, default 12 s. See "No fetch may hang" below |
+| `WRITE_TIMEOUT_MS` | Ceiling on a submission, default 2 min — a 20 MB video on mobile data is legitimately slow |
+| `STALE_SHOW_AFTER_MS` | Nothing has succeeded for this long → level-2 banner, default 90 s |
+| `STALE_MIN_SHOW_MS` | Minimum time the banner stays up once shown, default 10 s |
+| `LIVE_FAIL_STREAK` | Consecutive failed live reads before the level-1 banner, default 3 |
 | `MISI_POLL_MS` | Surprise-mission poll interval, default 8 s. Always a live `?misi=1` read, never `CONFIG.CSV` — see the comment above `CSV.objek` in the script for why |
 | `OBJECTS` | Fallback `[name, KD]` list used only while `CSV.objek` is blank. Not finalized — the sheet-driven `objek` tab is the intended source of truth, this is just what the page shows before that tab is published |
 
@@ -102,6 +107,37 @@ presence alone retires an entry; nothing survives `PENDING_TTL_MS` regardless; a
 itself is idempotent, so replaying it cannot invent a landmark. The storage keys are
 **versioned** — bump them if the entry shape ever changes again, because a stale entry sitting
 in a participant's `localStorage` is not something a redeploy would otherwise clear.
+
+**No fetch may hang.** `fetch()` has no timeout of its own — a socket that never answers leaves
+the promise pending forever. Observed live on 2026-09-02: one published-CSV tab (`milik`) hung
+past 13 s while the other five answered in under a second. Because every poll sits behind a
+reentrancy guard, one pending request latched that guard on and disabled the CSV path for the
+rest of the session. Everything therefore goes through `fetchT()`, which adds an `AbortController`
+deadline **and** rejects non-2xx responses — `fetch` resolves happily on a 404, and Publish-to-web
+answers with a real HTML error page when a tab is unpublished or quota is hit, which `parseCSV`
+would otherwise accept as board data and render as a garbled but authoritative-looking board.
+The six CSV tabs also fail independently now: one hung tab keeps its previous value and the cycle
+carries on, and only `harga` failing counts as a failed cycle.
+
+**The staleness banner has two levels, and is keyed on time since *any* path succeeded.** Level 1
+(`LIVE_FAIL_STREAK` consecutive live-read failures) means the CSV baseline is carrying the board:
+the numbers are right but we no longer know how far behind Google's recache is. Level 2
+(`STALE_SHOW_AFTER_MS` with nothing succeeding at all) points at the printed price list. It is
+keyed on failure *count* rather than clock age deliberately — a merely-hidden tab also leaves
+`LAST_LIVE` stale, and an age test would flash a warning on every phone unlock, which is the
+fastest way to teach teams to ignore it. `STALE_MIN_SHOW_MS` stops it strobing at the threshold.
+
+**The page refreshes on wake.** While a tab is hidden `loadFast` returns early by design and the
+browser throttles the timers besides (measured at 24 s against a nominal 3 s interval), so a
+just-unlocked phone would otherwise sit on minutes-old prices until the next tick.
+`visibilitychange` and `pageshow`/`persisted` (the mobile bfcache restore) fire a live read, a
+mission read, and — only if the live path is actually failing — a CSV cycle.
+
+**The buy dialog's background price check is display-only.** It updates the title and
+deliberately does **not** touch `pending.expectedCost`. That field is the price the team actually
+tapped, and `Code.gs` refuses to charge anything else without an explicit second tap. Moving it
+re-points the guard at the new price, so a ladder step landing in that window was charged
+silently — the exact thing `expectedCost` exists to prevent.
 
 **Districts collapse, and the collapse state is sticky.** 51 landmarks under 13 headers is an
 unpleasant scroll on a phone. Districts default open only if the team already holds a landmark

@@ -249,6 +249,19 @@ const CONFIG = {
   // After this long the Sheet is simply believed -- it is the source of truth, and a genuinely
   // lost submission is a banker/Kontrol problem, not something to paper over on the client.
   PENDING_TTL_MS: 180000,
+  // Staleness banner. STALE_SHOW_AFTER_MS is two missed CSV cycles -- a single blip is not
+  // news. LIVE_FAIL_STREAK counts consecutive ?data=1 failures, ~9s of genuinely failing polls.
+  // STALE_MIN_SHOW_MS keeps the banner up long enough that it cannot strobe at a threshold.
+  // No fetch may hang forever. Observed live 2026-09-02: one published-CSV tab (`milik`) hung
+  // past 13s while the other five answered in under a second. Without a ceiling that stalls the
+  // whole cycle, and the reentrancy guards then latch on, killing the poll for the rest of the
+  // session. Writes get a far longer ceiling -- a 20MB video over mobile data is legitimately
+  // slow -- but still a finite one, and a retry is safe because submissionId is idempotent.
+  READ_TIMEOUT_MS: 12000,
+  WRITE_TIMEOUT_MS: 120000,
+  STALE_SHOW_AFTER_MS: 90000,
+  STALE_MIN_SHOW_MS: 10000,
+  LIVE_FAIL_STREAK: 3,
   PHOTO_MAX_PX: 1200,
   PHOTO_QUALITY: 0.7,
   VIDEO_MAX_BYTES: 20 * 1024 * 1024,
@@ -287,6 +300,12 @@ let LAST_LIVE = 0;
 // to know whether tim and milik are guaranteed mutually consistent, and submitBuy needs it
 // for the same question. Set by whichever path last wrote DATA.
 let DATA_LIVE = false;
+// Consecutive failed live reads. Deliberately a failure COUNT, not a clock: LAST_LIVE also goes
+// stale when the tab is merely hidden or its timers are throttled, and keying the banner off
+// that would flash a warning on every phone unlock -- the fastest way to teach teams to ignore
+// it. loadFast() returns before its try block when hidden or already polling, so neither can
+// move this counter.
+let liveFailures = 0;
 // Active surprise mission, from the live ?misi=1 read — MISI.now/deadline are server
 // timestamps (ms); MISI_AT is this client's Date.now() at the moment they were fetched,
 // so the countdown corrects for clock skew instead of trusting the device's own clock.
@@ -318,6 +337,25 @@ try{
 function savePending(){ localStorage.setItem(PENDING_KEY, JSON.stringify(PENDING)); }
 
 // ---- data ------------------------------------------------------------------
+// fetch() has no timeout of its own: a socket that never answers leaves the promise pending
+// forever. Everything here is polled on an interval behind a reentrancy guard, so one pending
+// request would silently disable that path permanently. Always go through this.
+function fetchT(url, ms, opts){
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ms);
+  return fetch(url, Object.assign({ cache:"no-store", signal: ctl.signal }, opts || {}))
+    .then(r => {
+      // fetch only rejects on network failure -- a 404 or 500 resolves normally. Without this
+      // the error page's HTML gets handed to parseCSV and accepted as board data: Publish-to-web
+      // answers with a real page when a tab is unpublished or quota is hit, and the result is a
+      // garbled board showing no warning at all, which is worse than a blank one because it
+      // looks authoritative. Fail here instead and let the existing degrade paths handle it.
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r;
+    })
+    .finally(() => clearTimeout(timer));
+}
+
 function parseCSV(t){
   const rows=[]; let row=[], cell="", q=false;
   for (let i=0;i<t.length;i++){
@@ -349,14 +387,20 @@ async function load(){
       // independent — but there's no reason to await them one-after-another; nothing
       // downstream depends on fetch order, and doing so only adds two serial round
       // trips to every cycle.
+      // Each tab fails on its own. They are published separately and recache independently,
+      // so one slow or hung tab must not blank the other five -- it keeps whatever we already
+      // had for that tab and the cycle carries on. Only `harga` is load-bearing enough that
+      // losing it means the cycle genuinely failed.
       const names = ["harga","milik","tim","klasemen","aktivitas","objek"];
       const results = await Promise.all(names.map(n =>
         CONFIG.CSV[n]
-          ? fetch(CONFIG.CSV[n], {cache:"no-store"}).then(r=>r.text()).then(parseCSV)
-          : Promise.resolve(DATA[n] || [])));
-      d = {}; names.forEach((n,i) => d[n] = results[i]);
+          ? fetchT(CONFIG.CSV[n], CONFIG.READ_TIMEOUT_MS).then(r=>r.text()).then(parseCSV)
+              .catch(() => null)
+          : Promise.resolve(null)));
+      d = {}; names.forEach((n,i) => d[n] = results[i] || DATA[n] || []);
+      if (!results[0]) throw new Error("harga unavailable");
     } else {
-      const r = await fetch(CONFIG.ENDPOINT + "?data=1", {cache:"no-store"});
+      const r = await fetchT(CONFIG.ENDPOINT + "?data=1", CONFIG.READ_TIMEOUT_MS);
       d = await r.json();
       if (!d || !d.harga) throw new Error("bad payload");
       fromLive = true;
@@ -389,37 +433,81 @@ async function load(){
       PENDING.forEach(p => applyOptimistic(p.kind, p.item, p.res));
       savePending();
     }
-    $("#stale").hidden = true;
   }catch(err){
     // Never blank the screen. A stale board a team can still read beats an empty one.
     const c = localStorage.getItem(CACHE_KEY);
     // Provenance of a cached payload is unknowable after the fact, so treat it as CSV-grade:
     // confirmedBy then uses the stricter path, which the TTL backstop keeps from wedging.
     if (c && !LAST_OK){ const p = JSON.parse(c); DATA = p.d; LAST_OK = p.t; DATA_LIVE = false; }
-    if (LAST_OK){
-      const mins = Math.round((Date.now()-LAST_OK)/60000);
-      $("#stale").hidden = false;
-      $("#stale").textContent = "Koneksi bermasalah — data terakhir " + mins +
-        " menit lalu. Harga mungkin sudah berubah.";
-    } else {
+    if (!LAST_OK){
       $("#sub").textContent = "Tidak bisa memuat papan. Cek koneksi.";
     }
   }finally{
     csvPolling = false;
   }
+  updateStaleBanner();
   render();
 }
 
+// ---- staleness banner ------------------------------------------------------
+// One state function, on a 1s tick, replacing three scattered `$("#stale").hidden = ...` writes
+// that contradicted each other. The old shape raised the banner from load()'s catch and cleared
+// it from loadFast()'s success -- so with the CSVs failing and the script healthy (different
+// hosts, an ordinary split) it strobed once per 45s cycle while the board was in fact fine.
+//
+// Two levels, because two different things can be wrong and only one of them is an emergency:
+//   1. The live path is failing but CSV still carries the board. Correct numbers, unknown lag --
+//      Google recaches on its own schedule, so we cannot say how far behind we are, only that
+//      we are. Worth saying; not worth alarming about.
+//   2. Nothing has succeeded for STALE_SHOW_AFTER_MS. Now the printed list is the fallback.
+// Keyed on time since ANY path last succeeded, never on whether one cycle failed.
+let bannerSince = 0;
+const BOOT_AT = Date.now();
+function updateStaleBanner(){
+  const el = $("#stale");
+  // Measured from boot while nothing has succeeded yet, NOT from zero. Treating an unset
+  // LAST_OK as infinitely old puts "tidak bisa memuat papan" on screen during the very first
+  // load, before the first fetch has had a chance to answer -- a page that is merely slow would
+  // tell the team it is broken.
+  const age = Date.now() - (LAST_OK || BOOT_AT);
+  let msg = "";
+  if (age > CONFIG.STALE_SHOW_AFTER_MS){
+    msg = LAST_OK
+      ? "Papan belum ter-update " + Math.max(1, Math.round(age / 60000)) + " menit. Harga " +
+        "mungkin sudah berubah — pakai daftar harga cetak kalau ragu."
+      : "Tidak bisa memuat papan. Cek koneksi.";
+  } else if (liveFailures >= CONFIG.LIVE_FAIL_STREAK){
+    msg = "Update lambat — harga bisa telat beberapa menit. Cek daftar harga cetak sebelum beli.";
+  }
+  if (msg){
+    if (!bannerSince) bannerSince = Date.now();
+    el.hidden = false;
+    if (el.textContent !== msg) el.textContent = msg;
+  } else if (!bannerSince || Date.now() - bannerSince > CONFIG.STALE_MIN_SHOW_MS){
+    // Hysteresis: never clear within STALE_MIN_SHOW_MS of appearing. A warning that flickers
+    // reads as broken software and costs credibility on every other number on the page.
+    bannerSince = 0;
+    el.hidden = true;
+  }
+}
+
 // ---- surprise missions: live poll, never the cached CSV path (see MISI_POLL_MS above) --
+// Guarded like loadFast: wake() can fire this from visibilitychange and pageshow at once, and
+// two mission reads in flight would race to write MISI.
+let misiPolling = false;
 async function loadMisi(){
+  if (misiPolling) return;
+  misiPolling = true;
   try{
-    const r = await fetch(CONFIG.ENDPOINT + "?misi=1", {cache:"no-store"});
+    const r = await fetchT(CONFIG.ENDPOINT + "?misi=1", CONFIG.READ_TIMEOUT_MS);
     const j = await r.json();
     MISI = (j && j.active) ? j : null;
     MISI_AT = Date.now();
   }catch(err){
     // Leave the last known MISI in place — the countdown just free-runs on the client
     // clock until the next successful poll corrects it. Never worse than showing nothing.
+  }finally{
+    misiPolling = false;
   }
   renderMisi();
 }
@@ -434,7 +522,7 @@ async function loadFast(){
   if (fastPolling) return;
   fastPolling = true;
   try{
-    const r = await fetch(CONFIG.ENDPOINT + "?data=1", {cache:"no-store"});
+    const r = await fetchT(CONFIG.ENDPOINT + "?data=1", CONFIG.READ_TIMEOUT_MS);
     const d = await r.json();
     if (!d || !d.harga) throw new Error("bad payload");
     // Merge, never `DATA = d`: this payload carries LIVE_TABS only, so a wholesale assignment
@@ -448,11 +536,14 @@ async function loadFast(){
     PENDING = PENDING.filter(p => !confirmedBy(p, DATA, true));
     PENDING.forEach(p => applyOptimistic(p.kind, p.item, p.res));
     savePending();
-    $("#stale").hidden = true;
+    liveFailures = 0;
     render();
   }catch(err){
     // Silent — the CSV poll (load(), REFRESH_MS) is the resilient baseline and keeps
-    // running regardless. This tick just retries next interval.
+    // running regardless. This tick just retries next interval. The count is what the banner
+    // reads: a failing script is worth telling teams about even while the CSV carries the board,
+    // because Google recaches on its own schedule and we no longer know how far behind we are.
+    liveFailures++;
   }finally{
     fastPolling = false;
   }
@@ -816,9 +907,14 @@ function act(kind, item, label){
   if (kind === "buy"){
     // Dialog opens immediately on the last-known price — never block it on a network
     // round trip. This just tops the number up in the background, same item still open.
+    //
+    // DISPLAY ONLY. It deliberately does not touch pending.expectedCost. That field is the
+    // price the team actually tapped, and Code.gs refuses to charge anything else without an
+    // explicit second tap. Moving it here re-points the guard at whatever the new price is, so
+    // a ladder step landing in this window got charged silently -- the exact silent markup the
+    // expectedCost check exists to prevent. Leave it alone and let price_changed do its job.
     loadFast().then(() => {
       if (pending && pending.kind === "buy" && pending.item === item){
-        pending.expectedCost = priceOf(item);
         $("#d-title").textContent = buyTitle(item);
       }
     });
@@ -883,7 +979,7 @@ async function submitBuy(){
   if (pending.kind === "buy") payload.expectedCost = pending.expectedCost;
   if (photo) payload.photo = photo;
   try{
-    const r = await fetch(CONFIG.ENDPOINT, {
+    const r = await fetchT(CONFIG.ENDPOINT, CONFIG.WRITE_TIMEOUT_MS, {
       method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify(payload), redirect:"follow",
     });
@@ -958,6 +1054,27 @@ setInterval(load, CONFIG.REFRESH_MS);
 loadMisi();
 setInterval(loadMisi, CONFIG.MISI_POLL_MS);
 setInterval(loadFast, CONFIG.FAST_POLL_MS);
+setInterval(updateStaleBanner, 1000);
+
+// The 3s/8s polls are dead while the tab is hidden: loadFast returns early by design, and the
+// browser throttles background timers to ~1/min or freezes them outright (measured at 24s
+// against a nominal 3s interval). Waiting for the next tick after wake is what leaves a
+// just-unlocked phone reading minutes-old prices. pageshow/persisted covers the mobile bfcache
+// restore, where timers resume but the state they resume onto is old.
+function wake(){
+  if (document.visibilityState !== "visible") return;
+  loadFast();
+  loadMisi();                     // a mission window may have opened while we were hidden
+  // Six CSV fetches are only worth it when the live path is genuinely BROKEN -- then the CSV
+  // baseline is all the team has and its age matters most. Gated on the failure streak, not on
+  // LAST_LIVE's age, for the same reason the banner is: a merely-hidden tab also leaves
+  // LAST_LIVE stale, and an age test would fire six requests on every single unlock while the
+  // live read that just fired above was already going to answer in ~3s.
+  if (liveFailures >= CONFIG.LIVE_FAIL_STREAK) load();
+  updateStaleBanner();   // the tick the throttled 1s interval owes us, so the banner is right
+}                        // the instant the screen comes back on rather than up to a second later
+document.addEventListener("visibilitychange", wake);
+window.addEventListener("pageshow", e => { if (e.persisted) wake(); });
 </script>
 </body>
 </html>
