@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pos — Kelingkong</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8E%A9</text></svg>">
+<style>
+/* Staff-only, 3 stations. Built for a phone held outdoors by someone who just ran a
+   heat and has ~15 minutes before the next one — huge tap targets, minimal reading. */
+:root{
+  --bg:#fff; --ink:#111; --dim:#5a5a5a; --line:#d8d8d8;
+  --accent:#0b57d0; --good:#0f7b3d; --bad:#b3261e; --chip:#f1f3f5;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+header{padding:14px 16px 8px; border-bottom:1px solid var(--line)}
+h1{font-size:17px; margin:0}
+.sub{color:var(--dim); font-size:13px; margin-top:2px}
+main{padding:16px}
+.lbl{font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--dim); margin:0 0 8px}
+.grid{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:22px}
+.grid button{aspect-ratio:1; font-size:18px; font-weight:700; border-radius:12px;
+  border:1px solid var(--line); background:#fff; color:var(--ink)}
+.grid button.on{background:var(--accent); border-color:var(--accent); color:#fff}
+.picked{border:1px solid var(--line); border-radius:12px; padding:12px 14px;
+  margin-bottom:16px; font-size:15px}
+.picked b{font-size:22px}
+.outcomes{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px}
+.outcomes button{padding:22px 8px; font-size:20px; font-weight:800; border-radius:14px;
+  border:1px solid var(--line); background:#fff; color:var(--ink)}
+.outcomes button[disabled]{opacity:.4}
+.b-win{background:var(--good); border-color:var(--good); color:#fff}
+.b-lose{background:var(--bad); border-color:var(--bad); color:#fff}
+.res{padding:13px 14px; border-radius:12px; font-weight:700; font-size:16px;
+  margin-bottom:14px}
+.res.ok{background:#e8f6ec; color:var(--good)}
+.res.no{background:#fdeceb; color:var(--bad)}
+.badkey{padding:16px; text-align:center; color:var(--bad); font-weight:700}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#131314; --ink:#e8e8e8; --dim:#a0a0a0; --line:#3a3a3c; --chip:#2a2a2c;
+        --accent:#8ab4f8; --good:#7ee2a8; --bad:#f28b82}
+  .grid button, .outcomes button, .picked{background:#1c1c1e}
+  .res.ok{background:#16281c} .res.no{background:#2c1614}
+  .b-win{color:#06210f} .b-lose{color:#3a0906}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Pos <span id="posName"></span></h1>
+  <div class="sub" id="sub">Pilih tim, lalu ketuk hasil.</div>
+</header>
+
+<main>
+  <div id="app" hidden>
+    <p class="lbl">Nomor tim</p>
+    <div class="grid" id="teamGrid"></div>
+
+    <div class="picked" id="picked" hidden>
+      Tim terpilih: <b id="pickedTeam"></b>
+    </div>
+
+    <div class="outcomes">
+      <button class="b-win" id="btnWin" disabled>Menang</button>
+      <button class="b-lose" id="btnLose" disabled>Kalah</button>
+    </div>
+
+    <div id="result"></div>
+  </div>
+  <div class="badkey" id="badkey" hidden>
+    Kunci staf tidak ada di tautan ini. Buka tautan yang dibagikan panitia untuk pos ini.
+  </div>
+</main>
+
+<script>
+const CONFIG = {
+  ENDPOINT: "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec",
+  TEAMS: 21,
+};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c =>
+  ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+// Identity for this station: which post, and the shared staff secret. Both come from the
+// URL and are remembered in localStorage, same pattern as index.html's ?tim=/?key= — one
+// link per post, bookmarked on that station's device, opened once.
+const params = new URLSearchParams(location.search);
+const POS = params.get("pos") || localStorage.getItem("kk.pos") || "";
+if (params.get("pos")) localStorage.setItem("kk.pos", POS);
+const KEY = params.get("key") || localStorage.getItem("kk.staffkey") || "";
+if (params.get("key")) localStorage.setItem("kk.staffkey", KEY);
+
+let TEAM = null;
+
+function boot(){
+  if (!POS || !KEY){
+    $("#badkey").hidden = false;
+    return;
+  }
+  $("#app").hidden = false;
+  $("#posName").textContent = "— " + POS;
+  renderGrid();
+}
+
+function renderGrid(){
+  const cells = [];
+  for (let i = 1; i <= CONFIG.TEAMS; i++){
+    cells.push('<button data-t="' + i + '">' + i + '</button>');
+  }
+  $("#teamGrid").innerHTML = cells.join("");
+}
+
+$("#teamGrid").addEventListener("click", e => {
+  const b = e.target.closest("button[data-t]");
+  if (!b) return;
+  TEAM = Number(b.dataset.t);
+  document.querySelectorAll("#teamGrid button").forEach(x =>
+    x.classList.toggle("on", Number(x.dataset.t) === TEAM));
+  $("#picked").hidden = false;
+  $("#pickedTeam").textContent = "Tim " + TEAM;
+  $("#btnWin").disabled = false;
+  $("#btnLose").disabled = false;
+  $("#result").innerHTML = "";
+});
+
+async function submit(outcome){
+  if (!TEAM) return;
+  $("#btnWin").disabled = true;
+  $("#btnLose").disabled = true;
+  const payload = {
+    submissionId: (crypto.randomUUID ? crypto.randomUUID()
+      : String(Date.now()) + Math.random()),
+    team: TEAM, key: KEY, action: "post", item: POS, outcome,
+  };
+  try {
+    const r = await fetch(CONFIG.ENDPOINT, {
+      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload), redirect: "follow",
+    });
+    const res = await r.json();
+    $("#result").innerHTML = '<div class="res ' + (res.ok ? "ok" : "no") + '">Tim ' +
+      TEAM + ' — ' + esc(res.message || (res.ok ? "Tercatat." : "Gagal, coba lagi.")) +
+      '</div>';
+  } catch (err) {
+    $("#result").innerHTML = '<div class="res no">Tidak terkirim. Cek sinyal, lalu coba ' +
+      'lagi — pengiriman ganda tidak akan terhitung dua kali.</div>';
+  }
+  // Reset selection either way — a fresh tap is required before the next result can be
+  // sent, so a stray double-tap can't post twice for the same team.
+  TEAM = null;
+  document.querySelectorAll("#teamGrid button").forEach(x => x.classList.remove("on"));
+  $("#picked").hidden = true;
+  $("#btnWin").disabled = true;
+  $("#btnLose").disabled = true;
+}
+
+$("#btnWin").onclick = () => submit("win");
+$("#btnLose").onclick = () => submit("lose");
+
+boot();
+</script>
+</body>
+</html>

@@ -77,10 +77,10 @@ prevent. The cooldown roughly halves the ceiling, to somewhere around 1–1.3 KD
 depending on whether the idle slot gets used for a nearby task, which lands back in the
 same range as legitimate landmark play instead of dominating it.
 
-**Enforcement is cheap.** Only the two team IDs from the immediately preceding heat at
-that post need checking — a 2-team lookback, not a running total — so post staff can
-track it by memory or a slip of paper. The Form submission already logs team ID and
-placement per heat if a Sheet-side check is wanted instead.
+**Enforcement is automatic.** `web/pos.html` — the staff submission page, one bookmarked
+link per post — rejects a submission itself with an on-screen message if that team played
+this post within the cooldown window. Staff don't need to track it by memory or a slip of
+paper; they only relay what the screen says.
 
 ### Par scores
 
@@ -143,4 +143,7 @@ Post staff need to understand, in this order:
 3. Losing pays 20 KD. Nobody leaves with nothing.
 4. A team that just played sits out the next slot at this post — win, lose, or solo,
    it doesn't matter which.
-5. How to record a result in the Form — team ID, placement, done.
+5. How to record a result: open `web/pos.html` (bookmarked link for this post, given out
+   before the event) — tap the team's number, tap Menang or Kalah, done. Solo heats are
+   also recorded as Menang (beat par) or Kalah (miss par); the page pays the same either
+   way. No photo, no login.

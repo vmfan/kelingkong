@@ -39,6 +39,9 @@ const CONFIG = {
   PRICE_CAP_MULTIPLE: 2.5,
   POST_COOLDOWN_MIN: 15,                   // game-posts.md, added 2026-08-18
   POST_PAYOUT: { win: 40, lose: 20 },
+  // Shared secret for the 3 staff-only pos.html stations, in place of a per-team key --
+  // staff witness the heat themselves, so there is no team to spoof. Set before deploy.
+  STAFF_KEY: 'STAFF_KEY_SET_VIA_SCRIPT_PROPERTIES',
   OBJECT_PAYOUT: 5,
   TASK_RATE: 0.30,
   MEDIA_MAX_BYTES: 20 * 1024 * 1024,       // mirrors web/index.html's VIDEO_MAX_BYTES
@@ -78,10 +81,12 @@ function doPost(e) {
  * `?data=1` serves the four participant tabs as JSON, so the page has a working data
  * source without anyone having to click through Publish-to-web four times.
  *
- * This is the fallback, not the intended path. Reads are supposed to come from published
- * CSV so that a dead script still leaves 250 people with a readable board
- * (`ledger-system.md`). Paste the CSV URLs into web/index.html's CONFIG when you have
- * them and this route stops being used.
+ * Two callers use this route, deliberately in parallel rather than one replacing the
+ * other: the CSV-less fallback path in `load()` (if CONFIG.CSV is ever left blank), and
+ * `loadFast()`'s ~3s top-up poll that runs alongside the CSV baseline once CSV URLs are
+ * configured. The CSV path stays primary and stays resilient — a dead script still
+ * leaves the board readable from Google's own cache (`ledger-system.md`) — this route is
+ * what buys back the CSV recache lag (minutes) while the script is healthy.
  */
 function doGet(e) {
   if (e && e.parameter && e.parameter.data) {
@@ -191,10 +196,20 @@ function handle(req) {
   // submitting as them. Checked before Transactions is touched at all, same as
   // bad_team/bad_action above — a spoofed request never gets journaled. If a team's
   // key isn't in TeamKeys yet, this fails closed (rejects), not open.
-  const expectedKey = lookupTeamKey(ss, team);
-  if (!expectedKey || key !== expectedKey) {
-    return { ok: false, error: 'bad_key',
-             message: 'Kode tim tidak cocok — scan ulang QR di peta kalian.' };
+  //
+  // `post` is exempt from the per-team key: it's submitted by stationed staff who
+  // witnessed the heat themselves, not by the team, so there's no team identity to
+  // spoof. Gated instead by one shared STAFF_KEY baked into the 3 pos.html stations.
+  if (action === 'post') {
+    if (key !== CONFIG.STAFF_KEY) {
+      return { ok: false, error: 'bad_key', message: 'Kunci staf salah.' };
+    }
+  } else {
+    const expectedKey = lookupTeamKey(ss, team);
+    if (!expectedKey || key !== expectedKey) {
+      return { ok: false, error: 'bad_key',
+               message: 'Kode tim tidak cocok — scan ulang QR di peta kalian.' };
+    }
   }
 
   const tx = ss.getSheetByName('Transactions');
@@ -369,6 +384,20 @@ function price(ss, log, ctx) {
                             1 + CONFIG.ESCALATION_PER_BUYER * priorBuyers);
   const cost = Math.round(lm.basePrice * multiple);
   const balance = balanceOf(log, team);
+
+  // The client shows a price before the team commits to a photo; expectedCost is
+  // whatever that was. If another team bought first in the meantime, cost has moved and
+  // charging the new number without asking would be exactly the silent-markup complaint
+  // this check exists to prevent. Rejected the same way as insufficient funds -- logged,
+  // nothing charged -- so the client can show the new price and let the team decide.
+  // Absent expectedCost (older/other client), skip the check rather than fail closed.
+  const expectedCost = ctx.req.expectedCost;
+  if (expectedCost != null && Number(expectedCost) !== cost) {
+    return { ok: false, amount: 0, district: lm.district, basePrice: lm.basePrice,
+             ladderPos: priorBuyers + 1, note: 'price changed: expected ' + expectedCost +
+             ', now ' + cost, error: 'price_changed', cost: cost,
+             message: 'Harga sudah berubah jadi ' + cost + ' KD.' };
+  }
 
   if (cost > balance) {
     return { ok: false, amount: 0, district: lm.district, basePrice: lm.basePrice,
