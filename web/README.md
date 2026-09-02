@@ -114,10 +114,20 @@ past 13 s while the other five answered in under a second. Because every poll si
 reentrancy guard, one pending request latched that guard on and disabled the CSV path for the
 rest of the session. Everything therefore goes through `fetchT()`, which adds an `AbortController`
 deadline **and** rejects non-2xx responses — `fetch` resolves happily on a 404, and Publish-to-web
-answers with a real HTML error page when a tab is unpublished or quota is hit, which `parseCSV`
-would otherwise accept as board data and render as a garbled but authoritative-looking board.
-The six CSV tabs also fail independently now: one hung tab keeps its previous value and the cycle
-carries on, and only `harga` failing counts as a failed cycle.
+sometimes answers with a real HTML/JS error page (quota hit, or a tab that was never actually
+published) instead. The six CSV tabs also fail independently now: one hung or rejected tab keeps
+its previous value and the cycle carries on, and only `harga` failing counts as a failed cycle.
+
+**A 200-status response still isn't trusted as CSV.** `fetchT()`'s non-2xx check doesn't catch
+everything — the interstitial page above has been observed answering with a plain `200`, not an
+error status, so `r.ok` alone would let it straight through. `looksLikeCSV()` (used by every tab
+in `load()`) additionally requires `Content-Type: text/csv` and rejects a body that starts with
+`<`. Without this, `parseCSV` chops that page's inline `<script>` content into pseudo-CSV rows on
+every comma and newline, and whatever reads those rows renders the fragments verbatim — for
+`objek` specifically, straight into a button label, so a quota blip becomes raw JS source
+("`function n(a){...}`", `__lookupGetter__`, …) shown to a participant. `objectList()` adds one
+more layer specific to that tab: a row is only accepted as an object if its name is short and its
+price is blank or numeric, so anything that still isn't real CSV can't reach a button label.
 
 **The staleness banner has two levels, and is keyed on time since *any* path succeeded.** Level 1
 (`LIVE_FAIL_STREAK` consecutive live-read failures) means the CSV baseline is carrying the board:
@@ -132,6 +142,16 @@ browser throttles the timers besides (measured at 24 s against a nominal 3 s int
 just-unlocked phone would otherwise sit on minutes-old prices until the next tick.
 `visibilitychange` and `pageshow`/`persisted` (the mobile bfcache restore) fire a live read, a
 mission read, and — only if the live path is actually failing — a CSV cycle.
+
+**A stale tab reloads itself once a redeploy lands.** There's no service worker and no build
+step, so nothing else forces an already-open tab to pick up new code — a phone that loaded the
+page before a fix shipped keeps running the old JS/CSS indefinitely (this is how a bug already
+fixed on `gh-pages`, like faded stat-box numbers, could still show up on a stale tab). `wake()`
+does a same-origin `HEAD` on `location.href` and compares `ETag`/`Last-Modified` against the
+value recorded at boot; a change means a redeploy happened. The reload itself is driven by a
+1 s poll (`reloadIfStale()`), not the dialog's own `close` event — a scripted `dialog.close()`
+was observed to not reliably fire `close` in testing, so the poll is what actually catches the
+moment the buy dialog closes and it's safe to reload without interrupting a submission.
 
 **The buy dialog's background price check is display-only.** It updates the title and
 deliberately does **not** touch `pending.expectedCost`. That field is the price the team actually

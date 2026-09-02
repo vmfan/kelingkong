@@ -370,6 +370,18 @@ function parseCSV(t){
   return rows;
 }
 
+// fetchT()'s r.ok check only catches a non-2xx status. Google's Publish-to-web has been
+// observed answering with a 200-status HTML/JS interstitial page — quota hit, or a tab
+// that was never actually published — and without this, parseCSV chops that page's inline
+// <script> content into pseudo-CSV rows that then render as garbled text wherever that
+// tab's data reaches the screen (worst case: raw JS source as OBJEK button labels). Real
+// CSV exports send `content-type: text/csv`; an interstitial sends `text/html` and starts
+// with `<`. Either signal alone would do; checking both costs nothing.
+function looksLikeCSV(r, text){
+  const ct = r.headers.get("content-type") || "";
+  return ct.includes("text/csv") && !/^\s*</.test(text);
+}
+
 // load() is driven by the REFRESH_MS timer AND called directly from submitBuy(), so two
 // cycles can overlap; six CSV fetches take long enough that the older one can resolve last
 // and win. Same reasoning as loadFast()'s fastPolling flag.
@@ -394,7 +406,12 @@ async function load(){
       const names = ["harga","milik","tim","klasemen","aktivitas","objek"];
       const results = await Promise.all(names.map(n =>
         CONFIG.CSV[n]
-          ? fetchT(CONFIG.CSV[n], CONFIG.READ_TIMEOUT_MS).then(r=>r.text()).then(parseCSV)
+          ? fetchT(CONFIG.CSV[n], CONFIG.READ_TIMEOUT_MS)
+              .then(r => r.text().then(t => {
+                if (!looksLikeCSV(r, t)) throw new Error("not csv: " + n);
+                return t;
+              }))
+              .then(parseCSV)
               .catch(() => null)
           : Promise.resolve(null)));
       d = {}; names.forEach((n,i) => d[n] = results[i] || DATA[n] || []);
@@ -859,8 +876,18 @@ function renderRank(){
 // List of findable objects: the published `objek` tab if it's live, else CONFIG.OBJECTS.
 // Not hardcoded once the tab exists — the committee can add/remove/reprice objects with
 // no redeploy, same reasoning as everything else that stays unfinalized until game day.
+// Defense-in-depth on top of looksLikeCSV(): even a response that passes as CSV could in
+// principle carry a row that isn't really a name/price pair. A team never sees `harga` or
+// `aktivitas` rows directly rendered as clickable labels the way `objek` rows are, so this
+// is the one spot worth a second, narrow check — implausible rows (a "name" too long to be
+// a menu item, a "price" that isn't blank or a number) are dropped rather than shown.
 function objectList(){
-  const rows = body(DATA.objek);
+  const rows = body(DATA.objek).filter(r => {
+    const name = r[0] || "";
+    const priceCell = (r[1] ?? "").toString().trim();
+    return name.length > 0 && name.length <= 40 &&
+      (priceCell === "" || Number.isFinite(Number(priceCell)));
+  });
   return rows.length
     ? rows.map(r => [r[0], Number(r[1] || 5)])
     : CONFIG.OBJECTS;
@@ -1055,6 +1082,36 @@ loadMisi();
 setInterval(loadMisi, CONFIG.MISI_POLL_MS);
 setInterval(loadFast, CONFIG.FAST_POLL_MS);
 setInterval(updateStaleBanner, 1000);
+checkPageVersion();   // establishes PAGE_VERSION; wake() compares against it from here on
+
+// There is no service worker and no build step, so nothing forces an already-open tab to
+// pick up a redeploy -- a phone that loaded the page before a fix shipped keeps running the
+// old JS/CSS indefinitely (this is how a bug already fixed on gh-pages, like the faded
+// stat-box numbers, can still show up on a stale tab). GitHub Pages stamps every response
+// with an ETag/Last-Modified that changes on redeploy, so a same-origin HEAD is enough to
+// detect one without a version constant to remember to bump by hand.
+let PAGE_VERSION = null, PAGE_STALE = false;
+async function checkPageVersion(){
+  try{
+    const r = await fetchT(location.href, CONFIG.READ_TIMEOUT_MS, { method:"HEAD" });
+    const v = r.headers.get("etag") || r.headers.get("last-modified");
+    if (!v) return;                    // nothing to compare against -- skip, try next time
+    if (PAGE_VERSION === null) PAGE_VERSION = v;   // first call just establishes the baseline
+    else if (v !== PAGE_VERSION) PAGE_STALE = true;
+  }catch(err){
+    // Network hiccup -- skip this check, same degrade-not-break pattern as every other
+    // poll here. Never worse than not checking.
+  }
+}
+function reloadIfStale(){
+  // Never yank the page out from under a team mid-purchase -- if the dialog is open, leave
+  // PAGE_STALE set; the 1s interval below retries every tick, so it fires the moment the
+  // dialog closes without needing a dedicated handler. (Tried wiring this off the dialog's
+  // own "close" event instead -- HTMLDialogElement.close() is spec'd to queue that event,
+  // but a scripted close() was observed to never fire it, so a handler there would have
+  // silently never run. A cheap poll doesn't have that failure mode.)
+  if (PAGE_STALE && !$("#dlg").open) location.reload();
+}
 
 // The 3s/8s polls are dead while the tab is hidden: loadFast returns early by design, and the
 // browser throttles background timers to ~1/min or freezes them outright (measured at 24s
@@ -1072,9 +1129,11 @@ function wake(){
   // live read that just fired above was already going to answer in ~3s.
   if (liveFailures >= CONFIG.LIVE_FAIL_STREAK) load();
   updateStaleBanner();   // the tick the throttled 1s interval owes us, so the banner is right
+  checkPageVersion().then(reloadIfStale);   // a long-dormant tab is the likeliest one to be stale
 }                        // the instant the screen comes back on rather than up to a second later
 document.addEventListener("visibilitychange", wake);
 window.addEventListener("pageshow", e => { if (e.persisted) wake(); });
+setInterval(reloadIfStale, 1000);
 </script>
 </body>
 </html>
