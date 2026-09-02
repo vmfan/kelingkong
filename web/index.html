@@ -80,7 +80,8 @@ nav button{flex:1; border:0; border-radius:0; padding:13px 4px 15px; font-size:1
 nav button.on{color:var(--accent); box-shadow:inset 0 -3px 0 var(--accent)}
 .stat{display:grid; grid-template-columns:repeat(2,1fr); gap:9px; margin-bottom:14px}
 .stat div{border:1px solid var(--line); border-radius:12px; padding:10px 12px}
-.stat b{display:block; font-size:23px; font-variant-numeric:tabular-nums; line-height:1.15}
+.stat b{display:block; font-size:23px; font-weight:800; color:var(--ink);
+  font-variant-numeric:tabular-nums; line-height:1.15}
 .stat span{color:var(--dim); font-size:12.5px}
 .hint{border:1px solid #b9d4f6; background:#eff5fe; border-radius:12px; padding:11px 12px;
   margin-bottom:14px; font-size:14.5px}
@@ -229,6 +230,12 @@ const CONFIG = {
   // seconds; see the PENDING comment below), and a mission deadline hidden behind that
   // lag would silently eat into a team's 15-minute window before the box ever appeared.
   MISI_POLL_MS: 8000,
+  // Best-effort top-up over the CSV baseline: a live read (?data=1), same endpoint the
+  // Board route already exposes as its fallback path. When the script is healthy this
+  // gets price/ownership changes on screen in a few seconds instead of waiting on CSV
+  // recache; when it isn't, these ticks just fail silently and the CSV poll above still
+  // carries the board, same degrade-not-break pattern as everything else here.
+  FAST_POLL_MS: 3000,
   PHOTO_MAX_PX: 1200,
   PHOTO_QUALITY: 0.7,
   VIDEO_MAX_BYTES: 20 * 1024 * 1024,
@@ -265,7 +272,16 @@ let MISI = null, MISI_AT = 0, misiTimer = null;
 // board. Each entry here gets reapplied on top of every fetch until the fetched data
 // itself contains it, so a team never watches its own purchase "undo itself" while
 // waiting for Google to catch up.
+// Persisted to localStorage (kk.pending) alongside kk.cache: harga/milik/tim/klasemen
+// are each published-to-web separately and recache on independent schedules, so a
+// reload (fresh tab, reopened bookmark, or a backgrounded phone tab silently reloaded)
+// must not lose track of a purchase that's still waiting on one of those caches.
 let PENDING = [];
+try{
+  const pc = localStorage.getItem("kk.pending");
+  if (pc) PENDING = JSON.parse(pc);
+}catch(err){ PENDING = []; }
+function savePending(){ localStorage.setItem("kk.pending", JSON.stringify(PENDING)); }
 
 // ---- data ------------------------------------------------------------------
 function parseCSV(t){
@@ -286,18 +302,17 @@ async function load(){
   try{
     let d;
     if (CONFIG.CSV.harga){
-      const names = ["harga","milik","tim","klasemen"];
-      const results = await Promise.all(names
-        .map(n => fetch(CONFIG.CSV[n], {cache:"no-store"}).then(r=>r.text()).then(parseCSV)));
+      // All six tabs fetched concurrently. aktivitas/objek are published separately and
+      // may lag the other four in Google's own recache schedule — that's fine, each is
+      // independent — but there's no reason to await them one-after-another; nothing
+      // downstream depends on fetch order, and doing so only adds two serial round
+      // trips to every cycle.
+      const names = ["harga","milik","tim","klasemen","aktivitas","objek"];
+      const results = await Promise.all(names.map(n =>
+        CONFIG.CSV[n]
+          ? fetch(CONFIG.CSV[n], {cache:"no-store"}).then(r=>r.text()).then(parseCSV)
+          : Promise.resolve(DATA[n] || [])));
       d = {}; names.forEach((n,i) => d[n] = results[i]);
-      // aktivitas and objek are published separately and may lag the other four — fetch
-      // each if its URL is filled in, otherwise degrade rather than fail.
-      d.aktivitas = CONFIG.CSV.aktivitas
-        ? await fetch(CONFIG.CSV.aktivitas, {cache:"no-store"}).then(r=>r.text()).then(parseCSV)
-        : (DATA.aktivitas || []);
-      d.objek = CONFIG.CSV.objek
-        ? await fetch(CONFIG.CSV.objek, {cache:"no-store"}).then(r=>r.text()).then(parseCSV)
-        : (DATA.objek || []);
     } else {
       const r = await fetch(CONFIG.ENDPOINT + "?data=1", {cache:"no-store"});
       d = await r.json();
@@ -308,6 +323,7 @@ async function load(){
     // unconfirmed on top of this fetch, so a still-stale CSV can't roll the view back.
     PENDING = PENDING.filter(p => !confirmedBy(p, DATA));
     PENDING.forEach(p => applyOptimistic(p.kind, p.item, p.res));
+    savePending();
     LAST_OK = Date.now();
     localStorage.setItem("kk.cache", JSON.stringify({ t:LAST_OK, d }));
     $("#stale").hidden = true;
@@ -339,6 +355,35 @@ async function loadMisi(){
     // clock until the next successful poll corrects it. Never worse than showing nothing.
   }
   renderMisi();
+}
+
+// ---- fast top-up poll: live ?data=1, on top of the CSV baseline in load() ----------
+// Apps Script's own per-request latency runs ~3.3s (ledger-system.md) against a 3s poll
+// interval, so a slow response can still be in flight when the next tick fires. This
+// flag skips a tick rather than letting two overlapping fetches race to write DATA.
+let fastPolling = false;
+async function loadFast(){
+  if (document.visibilityState !== "visible") return; // don't burn battery/quota hidden
+  if (fastPolling) return;
+  fastPolling = true;
+  try{
+    const r = await fetch(CONFIG.ENDPOINT + "?data=1", {cache:"no-store"});
+    const d = await r.json();
+    if (!d || !d.harga) throw new Error("bad payload");
+    DATA = d;
+    PENDING = PENDING.filter(p => !confirmedBy(p, DATA));
+    PENDING.forEach(p => applyOptimistic(p.kind, p.item, p.res));
+    savePending();
+    LAST_OK = Date.now();
+    localStorage.setItem("kk.cache", JSON.stringify({ t:LAST_OK, d }));
+    $("#stale").hidden = true;
+    render();
+  }catch(err){
+    // Silent — the CSV poll (load(), REFRESH_MS) is the resilient baseline and keeps
+    // running regardless. This tick just retries next interval.
+  }finally{
+    fastPolling = false;
+  }
 }
 
 function tickMisi(){
@@ -391,6 +436,10 @@ function multiplierOf(held, sides){
 function sideOf(district){
   const row = body(DATA.harga).find(r => r[1] === district);
   return row ? row[2] : "";
+}
+function priceOf(name){
+  const row = body(DATA.harga).find(r => r[0] === name);
+  return row ? Number(row[3] || 0) : null;
 }
 function sideClass(side){
   return side === "Hong Kong Island" ? "hk" : side === "Kowloon" ? "kln" :
@@ -446,11 +495,23 @@ function applyOptimistic(kind, item, res){
 // True once a fetched payload itself contains the action — i.e. Google's CSV cache has
 // finally caught up — at which point PENDING can drop it instead of reapplying it forever.
 function confirmedBy(p, data){
-  if (p.kind === "buy"){
-    return body(data.milik).some(r => Number(r[0]) === TEAM && r[1] === p.item);
-  }
-  return body(data.aktivitas).some(r =>
-    Number(r[0]) === TEAM && r[1] === p.kind && r[2] === p.item);
+  const tableConfirmed = p.kind === "buy"
+    ? body(data.milik).some(r => Number(r[0]) === TEAM && r[1] === p.item)
+    : body(data.aktivitas).some(r =>
+        Number(r[0]) === TEAM && r[1] === p.kind && r[2] === p.item);
+  if (!tableConfirmed) return false;
+  // harga/milik/tim/klasemen are each published-to-web separately and recache on
+  // independent schedules (ledger-system.md) — milik (or aktivitas) can show an action
+  // before tim's cash column does. Dropping PENDING on table presence alone lets the
+  // balance revert to the stale pre-action figure until tim's cache separately catches
+  // up. p.preCash is the cash this client saw right before optimistically patching this
+  // action, so also require the raw fetched tim row to have actually moved past it.
+  if (p.preCash == null) return true;   // no baseline captured — fall back to table check
+  const raw = body(data.tim).find(r => Number(r[0]) === TEAM);
+  if (!raw) return true;
+  const amount = Number(p.res.amount || 0);
+  const rawCash = Number(raw[1] || 0);
+  return amount < 0 ? rawCash <= p.preCash + amount : rawCash >= p.preCash + amount;
 }
 
 // ---- the hint: what one more purchase would actually be worth ---------------
@@ -639,13 +700,18 @@ function renderObjs(){
 // ---- submitting ------------------------------------------------------------
 let pending = null, photo = null;
 
+function buyTitle(item){ return "Beli " + item + " — " + priceOf(item) + " KD"; }
+
 function act(kind, item, label){
   if (!TEAM){ alert("Pilih tim kalian dulu."); return; }
   if (CONFIG.BACKUP_FORM){ location.href = CONFIG.BACKUP_FORM; return; }
-  pending = { kind, item }; photo = null;
+  pending = { kind, item };
+  if (kind === "buy") pending.expectedCost = priceOf(item);
+  photo = null;
   $("#d-title").textContent =
-    (kind === "buy" ? "Beli " : kind === "task" ? "Tugas di " :
-     kind === "mission" ? "Misi: " : "Objek: ") + (label || item);
+    (kind === "buy" ? buyTitle(item) :
+     kind === "task" ? "Tugas di " + (label || item) :
+     kind === "mission" ? "Misi: " + (label || item) : "Objek: " + (label || item));
   $("#d-why").textContent = kind === "object"
     ? "Foto objeknya. " +
       (objectList().find(([n]) => n === item)?.[1] ?? 5) + " KD, sekali per tim."
@@ -658,6 +724,16 @@ function act(kind, item, label){
   wireFile();
   $("#d-go").disabled = false; $("#d-go").textContent = "Kirim";
   $("#dlg").showModal();
+  if (kind === "buy"){
+    // Dialog opens immediately on the last-known price — never block it on a network
+    // round trip. This just tops the number up in the background, same item still open.
+    loadFast().then(() => {
+      if (pending && pending.kind === "buy" && pending.item === item){
+        pending.expectedCost = priceOf(item);
+        $("#d-title").textContent = buyTitle(item);
+      }
+    });
+  }
 }
 
 function wireFile(){
@@ -703,7 +779,7 @@ function wireFile(){
   };
 }
 
-$("#d-go").onclick = async () => {
+async function submitBuy(){
   if (!pending) return;
   const btn = $("#d-go");
   // Disabled for the whole round trip. It takes ~3s; without this teams double-tap,
@@ -715,6 +791,7 @@ $("#d-go").onclick = async () => {
       : String(Date.now()) + Math.random()),
     team: TEAM, key: KEY, action: pending.kind, item: pending.item,
   };
+  if (pending.kind === "buy") payload.expectedCost = pending.expectedCost;
   if (photo) payload.photo = photo;
   try{
     const r = await fetch(CONFIG.ENDPOINT, {
@@ -722,6 +799,18 @@ $("#d-go").onclick = async () => {
       body: JSON.stringify(payload), redirect:"follow",
     });
     const res = await r.json();
+    if (res.error === "price_changed") {
+      // Rejected atomically server-side — nothing was charged. Show the new price and
+      // require an explicit second tap before spending a single KD more than the team
+      // saw when they hit Kirim.
+      $("#d-res").innerHTML = '<div class="res no">Harga sudah naik jadi ' + res.cost +
+        ' KD (tadinya ' + pending.expectedCost + ' KD). Beli sekarang di harga baru?</div>';
+      pending.expectedCost = res.cost;
+      $("#d-title").textContent = buyTitle(pending.item);
+      btn.textContent = "Ya, beli " + res.cost + " KD";
+      btn.disabled = false;
+      return;
+    }
     $("#d-res").innerHTML = '<div class="res ' + (res.ok ? "ok" : "no") + '">' +
       esc(res.message || (res.ok ? "Tercatat." : "Gagal — coba lagi.")) + '</div>';
     btn.textContent = res.ok ? "Selesai" : "Coba lagi";
@@ -731,7 +820,13 @@ $("#d-go").onclick = async () => {
       // that may not have recached yet. Queue it in PENDING too, so it survives every
       // load() (this one and the 45s poll) until the CSV itself confirms it, rather
       // than being wiped by the very next still-stale fetch.
-      PENDING.push({ kind: pending.kind, item: pending.item, res });
+      // preCash is the team's cash as seen right now, before this action's optimistic
+      // patch lands — confirmedBy() uses it to detect when tim's own cache has caught
+      // up, not just milik/aktivitas (see confirmedBy for why both are needed).
+      const preT = myTim();
+      const preCash = preT ? Number(preT[1] || 0) : null;
+      PENDING.push({ kind: pending.kind, item: pending.item, res, preCash });
+      savePending();
       applyOptimistic(pending.kind, pending.item, res);
       render();
       load();
@@ -742,7 +837,8 @@ $("#d-go").onclick = async () => {
       'tekan Kirim lagi — pengiriman ganda tidak akan terhitung dua kali.</div>';
     btn.disabled = false; btn.textContent = "Kirim lagi";
   }
-};
+}
+$("#d-go").onclick = submitBuy;
 
 // ---- nav / boot ------------------------------------------------------------
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
@@ -762,6 +858,7 @@ load();
 setInterval(load, CONFIG.REFRESH_MS);
 loadMisi();
 setInterval(loadMisi, CONFIG.MISI_POLL_MS);
+setInterval(loadFast, CONFIG.FAST_POLL_MS);
 </script>
 </body>
 </html>
