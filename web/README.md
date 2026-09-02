@@ -39,25 +39,30 @@ Local check: `python3 -m http.server 8765` then <http://localhost:8765/index.htm
 | Key | Why you would change it |
 |---|---|
 | `ENDPOINT` | The Apps Script `/exec` URL. Already set |
-| `CSV` | Publish-to-web CSV URLs for `harga` / `milik` / `tim` / `klasemen` / `aktivitas` / `objek`. The first four are filled in; `aktivitas` (task/object completion, added 2026-08-19) and `objek` (Objects to Find list, added 2026-08-20) are **still blank** — while `aktivitas` is blank the page shows no completion state; while `objek` is blank the page falls back to `CONFIG.OBJECTS`. Neither falls back to the script for the other four |
+| `CSV` | Publish-to-web CSV URLs for `harga` / `milik` / `tim` / `klasemen` / `aktivitas` / `objek`. All six are filled in as of 2026-09-01. If one is ever blanked, that tab degrades (no completion state for `aktivitas`; `CONFIG.OBJECTS` for `objek`) rather than breaking |
 | `BACKUP_FORM` | Set this and every action button redirects to the backup Form instead. The mid-event failover — one edit, no redeploy |
-| `REFRESH_MS` | Poll interval, default 45 s |
+| `REFRESH_MS` | CSV poll interval, default 45 s |
+| `FAST_POLL_MS` | Live `?data=1` poll, default 3 s. This is the primary read path while the script is healthy |
+| `LIVE_TRUST_MS` | How long a live read owns the board, default 20 s. Raise it if the script is slow enough that the CSV keeps taking over |
+| `PENDING_TTL_MS` | How long an unconfirmed optimistic patch may survive, default 3 min |
 | `MISI_POLL_MS` | Surprise-mission poll interval, default 8 s. Always a live `?misi=1` read, never `CONFIG.CSV` — see the comment above `CSV.objek` in the script for why |
 | `OBJECTS` | Fallback `[name, KD]` list used only while `CSV.objek` is blank. Not finalized — the sheet-driven `objek` tab is the intended source of truth, this is just what the page shows before that tab is published |
 
-### Fill in `CSV.aktivitas` and `CSV.objek` before the event
+### Publishing a tab, if one ever needs redoing
 
-While `CSV.aktivitas` is blank, task/object buttons never gray out — the page has no way to
-know what a team has already done, so it always shows a live button, and a resubmit is just
-rejected server-side as a `duplicate` with no visual warning beforehand. While `CSV.objek` is
-blank, the "Objects to Find" list is whatever `CONFIG.OBJECTS` says in the code, not what the
-committee most recently decided. The Sheets API cannot publish tabs, so both are manual, same
-as the other four were:
+The Sheets API cannot publish tabs, so this is manual. In `Kelingkong Ledger`:
+**File ▸ Share ▸ Publish to web**, pick the sheet, choose **CSV**, publish, copy the URL, paste
+it into the matching `CONFIG.CSV` key. Publishing a single sheet does **not** make the document
+link-viewable, so the operator tabs stay private.
 
-In `Kelingkong Ledger`: **File ▸ Share ▸ Publish to web**, pick the `aktivitas` sheet (or the
-`objek` sheet — same steps), choose **CSV**, publish, copy the URL, paste it into
-`CONFIG.CSV.aktivitas` (or `CONFIG.CSV.objek`). Publishing a single sheet does **not** make the
-document link-viewable, so the operator tabs stay private.
+### `?data=1` does not serve `objek`
+
+`readParticipantTabs()` in `Code.gs` returns five tabs — `harga`, `milik`, `tim`, `klasemen`,
+`aktivitas`. **Not `objek`.** So `loadFast()` merges the tabs it receives into `DATA` instead of
+replacing `DATA` wholesale; a wholesale assignment would wipe the objects list every 3 s and
+silently drop the page back to the `CONFIG.OBJECTS` fallback. If you add a tab to
+`readParticipantTabs`, add it to `LIVE_TABS` in `index.html` too, and take it out of
+`CSV_ONLY_TABS`.
 
 ### The `objek` tab's shape
 
@@ -79,7 +84,24 @@ between ~3 GB and ~150 MB of Drive.
 
 **The board never goes blank.** The last successful fetch is cached in `localStorage`; if
 the network fails the page shows that with a staleness banner rather than nothing. The
-printed price list is the fallback below that.
+printed price list is the fallback below that. The cache is written *before* the optimistic
+patch is applied, so it stores what the Sheet said, not what the page was predicting.
+
+**The live poll owns the board; the CSV poll is the fallback.** Two readers run at once — a
+3 s `?data=1` read of the Sheet, and the 45 s published-CSV baseline that recaches on Google's
+schedule (minutes). While a live read is younger than `LIVE_TRUST_MS` the CSV cycle takes only
+the tabs the live route cannot serve (`objek`), because letting minutes-old CSV values
+overwrite seconds-old live ones makes numbers visibly change and then revert. When the script
+is down, `LAST_LIVE` goes stale and the CSV baseline resumes owning everything — the
+degrade-not-break path in `docs/2026/ledger-system.md`.
+
+**Optimistic patches are bounded.** A submission the fetched board has not caught up with yet
+is queued in `kk.pending.v2` and reapplied on each fetch, so a purchase never appears to undo
+itself. Three rules keep that from drifting: a live payload is one atomic read, so table
+presence alone retires an entry; nothing survives `PENDING_TTL_MS` regardless; and the patch
+itself is idempotent, so replaying it cannot invent a landmark. The storage keys are
+**versioned** — bump them if the entry shape ever changes again, because a stale entry sitting
+in a participant's `localStorage` is not something a redeploy would otherwise clear.
 
 **Districts collapse, and the collapse state is sticky.** 51 landmarks under 13 headers is an
 unpleasant scroll on a phone. Districts default open only if the team already holds a landmark

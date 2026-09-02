@@ -236,6 +236,19 @@ const CONFIG = {
   // recache; when it isn't, these ticks just fail silently and the CSV poll above still
   // carries the board, same degrade-not-break pattern as everything else here.
   FAST_POLL_MS: 3000,
+  // A live ?data=1 read younger than this owns the five tabs it serves, and the 45s CSV
+  // baseline below must not roll them back. Google's Publish-to-web recaches on its own
+  // schedule (minutes), so without this the two pollers fight: the fast poll puts a fresh
+  // number on screen and the next CSV tick reverts it, every 45s. Set comfortably above
+  // FAST_POLL_MS plus Apps Script's ~3.3s latency, so one slow or dropped tick does not
+  // hand the board back to the CSV.
+  LIVE_TRUST_MS: 20000,
+  // Hard backstop on the optimistic queue below. A PENDING entry is meant to be dropped the
+  // moment a fetch confirms it; this guarantees one can never outlive its usefulness even if
+  // that predicate is wrong, which is exactly the bug this constant was added to foreclose.
+  // After this long the Sheet is simply believed -- it is the source of truth, and a genuinely
+  // lost submission is a banker/Kontrol problem, not something to paper over on the client.
+  PENDING_TTL_MS: 180000,
   PHOTO_MAX_PX: 1200,
   PHOTO_QUALITY: 0.7,
   VIDEO_MAX_BYTES: 20 * 1024 * 1024,
@@ -262,6 +275,18 @@ if (params.get("key")) localStorage.setItem("kk.key", KEY);
 
 let DATA = { harga:[], milik:[], tim:[], klasemen:[], aktivitas:[], objek:[] },
     LAST_OK = 0, view = "harga";
+// The five tabs ?data=1 serves (Code.gs readParticipantTabs) and the ones only the published
+// CSVs carry. `objek` is deliberately NOT in the live payload, so a wholesale `DATA = d` from
+// the fast poll would wipe it every 3s and silently drop the page back to CONFIG.OBJECTS.
+const LIVE_TABS = ["harga","milik","tim","klasemen","aktivitas"];
+const CSV_ONLY_TABS = ["objek"];
+// Date.now() of the last successful live read, whichever path produced it. Drives
+// CONFIG.LIVE_TRUST_MS -- see the comment there.
+let LAST_LIVE = 0;
+// Whether the tabs currently in DATA came from the live ?data=1 route. confirmedBy needs it
+// to know whether tim and milik are guaranteed mutually consistent, and submitBuy needs it
+// for the same question. Set by whichever path last wrote DATA.
+let DATA_LIVE = false;
 // Active surprise mission, from the live ?misi=1 read — MISI.now/deadline are server
 // timestamps (ms); MISI_AT is this client's Date.now() at the moment they were fetched,
 // so the countdown corrects for clock skew instead of trusting the device's own clock.
@@ -276,12 +301,21 @@ let MISI = null, MISI_AT = 0, misiTimer = null;
 // are each published-to-web separately and recache on independent schedules, so a
 // reload (fresh tab, reopened bookmark, or a backgrounded phone tab silently reloaded)
 // must not lose track of a purchase that's still waiting on one of those caches.
+//
+// The keys are VERSIONED. Entries written by the pre-fix code could wedge permanently (a
+// confirmedBy predicate they could never satisfy), and such an entry lives in localStorage
+// on the participant's phone -- shipping corrected code does not remove it. Bumping the key
+// is what actually heals an already-broken device on its next load. kk.team/kk.key keep
+// their names on purpose: team identity must survive this.
+const PENDING_KEY = "kk.pending.v2", CACHE_KEY = "kk.cache.v2";
+["kk.pending", "kk.cache"].forEach(k => { try{ localStorage.removeItem(k); }catch(err){} });
+
 let PENDING = [];
 try{
-  const pc = localStorage.getItem("kk.pending");
+  const pc = localStorage.getItem(PENDING_KEY);
   if (pc) PENDING = JSON.parse(pc);
 }catch(err){ PENDING = []; }
-function savePending(){ localStorage.setItem("kk.pending", JSON.stringify(PENDING)); }
+function savePending(){ localStorage.setItem(PENDING_KEY, JSON.stringify(PENDING)); }
 
 // ---- data ------------------------------------------------------------------
 function parseCSV(t){
@@ -298,7 +332,15 @@ function parseCSV(t){
   return rows;
 }
 
+// load() is driven by the REFRESH_MS timer AND called directly from submitBuy(), so two
+// cycles can overlap; six CSV fetches take long enough that the older one can resolve last
+// and win. Same reasoning as loadFast()'s fastPolling flag.
+let csvPolling = false;
 async function load(){
+  if (csvPolling) return;
+  csvPolling = true;
+  // True when `d` came from the live ?data=1 route rather than the published CSVs.
+  let fromLive = false;
   try{
     let d;
     if (CONFIG.CSV.harga){
@@ -317,20 +359,43 @@ async function load(){
       const r = await fetch(CONFIG.ENDPOINT + "?data=1", {cache:"no-store"});
       d = await r.json();
       if (!d || !d.harga) throw new Error("bad payload");
+      fromLive = true;
     }
-    DATA = d;
+    // While the live poll is healthy it owns LIVE_TABS -- it reads the Sheet directly, where
+    // the CSVs are whatever Google last recached (minutes old). Overwriting fresh values with
+    // stale ones every 45s is what made numbers change and then revert, and it is also what
+    // poisoned the confirmedBy baselines below. Take only the tabs the live route cannot
+    // serve. When the live path is failing this is false and the CSV baseline resumes owning
+    // the whole board, unchanged -- the degrade-not-break path in ledger-system.md.
+    const liveFresh = !fromLive && (Date.now() - LAST_LIVE) < CONFIG.LIVE_TRUST_MS;
+    if (liveFresh){
+      CSV_ONLY_TABS.forEach(n => { if (d[n]) DATA[n] = d[n]; });
+    } else {
+      DATA = d;
+      DATA_LIVE = fromLive;
+      if (fromLive) LAST_LIVE = Date.now();
+    }
+    LAST_OK = Date.now();
+    // Cached BEFORE applyOptimistic runs: it mutates DATA.tim's row in place, and a cache
+    // written afterwards stores the patched figures. A cold start restoring that cache would
+    // then reapply PENDING on top of numbers that already contain it, compounding the drift.
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ t:LAST_OK, d:DATA }));
     // Drop any pending action the fetch itself now confirms; reapply everything still
     // unconfirmed on top of this fetch, so a still-stale CSV can't roll the view back.
-    PENDING = PENDING.filter(p => !confirmedBy(p, DATA));
-    PENDING.forEach(p => applyOptimistic(p.kind, p.item, p.res));
-    savePending();
-    LAST_OK = Date.now();
-    localStorage.setItem("kk.cache", JSON.stringify({ t:LAST_OK, d }));
+    // Skipped entirely when liveFresh: loadFast() owns that reconciliation this cycle, and
+    // running the CSV-path predicate against live tabs would be answering the wrong question.
+    if (!liveFresh){
+      PENDING = PENDING.filter(p => !confirmedBy(p, DATA, fromLive));
+      PENDING.forEach(p => applyOptimistic(p.kind, p.item, p.res));
+      savePending();
+    }
     $("#stale").hidden = true;
   }catch(err){
     // Never blank the screen. A stale board a team can still read beats an empty one.
-    const c = localStorage.getItem("kk.cache");
-    if (c && !LAST_OK){ const p = JSON.parse(c); DATA = p.d; LAST_OK = p.t; }
+    const c = localStorage.getItem(CACHE_KEY);
+    // Provenance of a cached payload is unknowable after the fact, so treat it as CSV-grade:
+    // confirmedBy then uses the stricter path, which the TTL backstop keeps from wedging.
+    if (c && !LAST_OK){ const p = JSON.parse(c); DATA = p.d; LAST_OK = p.t; DATA_LIVE = false; }
     if (LAST_OK){
       const mins = Math.round((Date.now()-LAST_OK)/60000);
       $("#stale").hidden = false;
@@ -339,6 +404,8 @@ async function load(){
     } else {
       $("#sub").textContent = "Tidak bisa memuat papan. Cek koneksi.";
     }
+  }finally{
+    csvPolling = false;
   }
   render();
 }
@@ -370,12 +437,17 @@ async function loadFast(){
     const r = await fetch(CONFIG.ENDPOINT + "?data=1", {cache:"no-store"});
     const d = await r.json();
     if (!d || !d.harga) throw new Error("bad payload");
-    DATA = d;
-    PENDING = PENDING.filter(p => !confirmedBy(p, DATA));
+    // Merge, never `DATA = d`: this payload carries LIVE_TABS only, so a wholesale assignment
+    // drops `objek` and the page falls back to the hardcoded CONFIG.OBJECTS list every 3s.
+    LIVE_TABS.forEach(n => { if (d[n]) DATA[n] = d[n]; });
+    DATA_LIVE = true;
+    LAST_LIVE = LAST_OK = Date.now();
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ t:LAST_OK, d:DATA }));  // before the patch
+    // live=true: this is one atomic read of every tab (Code.gs readParticipantTabs), so
+    // table presence alone settles it -- see confirmedBy.
+    PENDING = PENDING.filter(p => !confirmedBy(p, DATA, true));
     PENDING.forEach(p => applyOptimistic(p.kind, p.item, p.res));
     savePending();
-    LAST_OK = Date.now();
-    localStorage.setItem("kk.cache", JSON.stringify({ t:LAST_OK, d }));
     $("#stale").hidden = true;
     render();
   }catch(err){
@@ -477,12 +549,19 @@ function applyOptimistic(kind, item, res){
     const lm = body(DATA.harga).find(r => r[0] === item);
     const val = lm ? lm[4] : 0;
     const dist = lm ? lm[1] : (res.district || "");
-    DATA.milik = (DATA.milik || []).concat([[String(TEAM), item, dist, val]]);
-    t[1] = String(Number(t[1] || 0) + amount);           // amount is already -cost
-    if (lm){
-      lm[6] = String(Number(lm[6] || 0) + 1);             // pembeli
-      if (res.titleholder) lm[7] = String(TEAM);          // pemegang_title
+    // Only add what the fetch does not already show. myState() below counts milik ROWS, so an
+    // unconditional concat on top of a payload that already contains the purchase invents a
+    // landmark -- inflating the count, the face value and therefore the score, on every poll.
+    // The pembeli/title bumps sit inside the guard for the same reason.
+    const already = body(DATA.milik).some(r => Number(r[0]) === TEAM && r[1] === item);
+    if (!already){
+      DATA.milik = (DATA.milik || []).concat([[String(TEAM), item, dist, val]]);
+      if (lm){
+        lm[6] = String(Number(lm[6] || 0) + 1);           // pembeli
+        if (res.titleholder) lm[7] = String(TEAM);        // pemegang_title
+      }
     }
+    t[1] = String(Number(t[1] || 0) + amount);           // amount is already -cost
   }
   // Landmark count, multiplier and score are recomputed with the same math Standings
   // uses (myState()), so the optimistic view can't drift from what the Sheet confirms.
@@ -494,12 +573,22 @@ function applyOptimistic(kind, item, res){
 
 // True once a fetched payload itself contains the action — i.e. Google's CSV cache has
 // finally caught up — at which point PENDING can drop it instead of reapplying it forever.
-function confirmedBy(p, data){
+function confirmedBy(p, data, live){
   const tableConfirmed = p.kind === "buy"
     ? body(data.milik).some(r => Number(r[0]) === TEAM && r[1] === p.item)
     : body(data.aktivitas).some(r =>
         Number(r[0]) === TEAM && r[1] === p.kind && r[2] === p.item);
   if (!tableConfirmed) return false;
+  // A live ?data=1 payload is a single atomic read of every tab in one execution against one
+  // spreadsheet handle (Code.gs readParticipantTabs), and tim/milik are both formulas over
+  // Transactions — so there tim CANNOT lag milik, and table presence settles it. The
+  // split-cache hazard the preCash check below guards against exists only on the CSV path.
+  if (live) return true;
+  // Unconditional backstop. preCash compares an ABSOLUTE cash figure across an unbounded
+  // window, but cash is not monotone: any later transaction of the opposite sign — or a
+  // baseline captured while DATA.tim was stale — makes the inequality unreachable, and the
+  // entry then replays onto every fetch forever. Past this age the Sheet is simply believed.
+  if (p.at && Date.now() - p.at > CONFIG.PENDING_TTL_MS) return true;
   // harga/milik/tim/klasemen are each published-to-web separately and recache on
   // independent schedules (ledger-system.md) — milik (or aktivitas) can show an action
   // before tim's cash column does. Dropping PENDING on table presence alone lets the
@@ -825,9 +914,19 @@ async function submitBuy(){
       // up, not just milik/aktivitas (see confirmedBy for why both are needed).
       const preT = myTim();
       const preCash = preT ? Number(preT[1] || 0) : null;
-      PENDING.push({ kind: pending.kind, item: pending.item, res, preCash });
-      savePending();
-      applyOptimistic(pending.kind, pending.item, res);
+      const entry = { kind: pending.kind, item: pending.item, res, preCash,
+                      at: Date.now() };   // CONFIG.PENDING_TTL_MS measures from here
+      // A poll can land while the ~3s POST is still in flight, so DATA may ALREADY contain
+      // this action by the time we get here. Patching it in regardless subtracts the cost a
+      // second time and the team watches its balance drop by double until the next poll
+      // corrects it. Ask the same question the pollers ask before applying anything.
+      if (confirmedBy(entry, DATA, DATA_LIVE)){
+        // Already reflected in the board -- nothing to patch, nothing to queue.
+      } else {
+        PENDING.push(entry);
+        savePending();
+        applyOptimistic(entry.kind, entry.item, entry.res);
+      }
       render();
       load();
       setTimeout(() => $("#dlg").close(), 1400);
