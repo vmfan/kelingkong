@@ -41,6 +41,7 @@ Local check: `python3 -m http.server 8765` then <http://localhost:8765/index.htm
 | `ENDPOINT` | The Apps Script `/exec` URL. Already set |
 | `CSV` | Publish-to-web CSV URLs for `harga` / `milik` / `tim` / `klasemen` / `aktivitas` / `objek`. All six are filled in as of 2026-09-01. If one is ever blanked, that tab degrades (no completion state for `aktivitas`; `CONFIG.OBJECTS` for `objek`) rather than breaking |
 | `BACKUP_FORM` | Set this and every action button redirects to the backup Form instead. The mid-event failover — one edit, no redeploy |
+| `SHOW_KLASEMEN` | Default `false`. Hides the ranked-standings tab from participants — a visible gap between teams risks over-competitiveness or pessimism/complacency. Data still polls in the background; flip to `true` to bring the tab back, no other change needed |
 | `REFRESH_MS` | CSV poll interval, default 45 s |
 | `FAST_POLL_MS` | Live `?data=1` poll, default 3 s. This is the primary read path while the script is healthy |
 | `LIVE_TRUST_MS` | How long a live read owns the board, default 20 s. Raise it if the script is slow enough that the CSV keeps taking over |

@@ -224,6 +224,10 @@ const CONFIG = {
         },
   // Flip to the backup Form URL if the script dies mid-event. One edit, no redeploy.
   BACKUP_FORM: "",
+  // Off by default: a visible ranked standings tab risks over-competitiveness or
+  // pessimism/complacency once the point gap between teams grows large. Flip to
+  // true to bring the Klasemen tab back — no other change needed.
+  SHOW_KLASEMEN: false,
   REFRESH_MS: 45000,
   // Missions are read live from the script (?misi=1), never through CONFIG.CSV — those
   // are Google Publish-to-web CSVs that recache on their own schedule (minutes, not
@@ -1070,6 +1074,8 @@ document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
   window.scrollTo(0,0);
 });
 $("#q").oninput = renderHarga;
+
+if (!CONFIG.SHOW_KLASEMEN) $('nav button[data-v="klasemen"]').hidden = true;
 
 if (!TEAM){
   const n = prompt("Nomor tim kalian (1-21)?");
