@@ -32,7 +32,7 @@ const CONFIG = {
   SPREADSHEET_ID: 'SPREADSHEET_ID_SET_VIA_SCRIPT_PROPERTIES',
   PHOTO_FOLDER_ID: 'PHOTO_FOLDER_ID_SET_VIA_SCRIPT_PROPERTIES',
   TIMEZONE: 'Asia/Hong_Kong',
-  DEADLINE: '2026-09-12T16:30:00+08:00',  // operations.md rundown
+  DEADLINE: '2026-09-12T16:45:00+08:00',  // operations.md rundown, retimed 2026-09-04
   ALLOWANCE: 150,                          // economy.md — starting cash per team
   TEAMS: 21,  // fixed 2026-09-01 -- 21 teams of 10, see operations.md item 26
   ESCALATION_PER_BUYER: 0.25,
@@ -296,7 +296,7 @@ function price(ss, log, ctx) {
 
   if (new Date() > new Date(CONFIG.DEADLINE)) {
     return { ok: false, amount: 0, note: 'after deadline',
-             error: 'closed', message: 'Pengiriman sudah ditutup jam 16:30.' };
+             error: 'closed', message: 'Pengiriman sudah ditutup jam 16:45.' };
   }
 
   if (action === 'object') {

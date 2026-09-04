@@ -214,7 +214,7 @@ should know which risks it is carrying.
 | **Post pars** | Solo play feels punishing or head-to-head is pointless | Trial each game once with any 10 people — a single run beats guesswork |
 | **Sheet under load** | The 2025 failure repeats. Highest operational risk | Load test costs nothing and needs no participants — **do this one** |
 | **Whether teams cluster at all** | The whole redesign does not land | Stage 1 |
-| **Whether the same-side cap is discoverable, and reads as fair** *(new 2026-08-17)* | Teams hold 3 same-side districts anyway, get capped at ×1.4, and feel cheated at 17:00 rather than warned at 10:30 | Stage 1 (cold-read check) and Stage 3 (does the reveal land) |
+| **Whether the same-side cap is discoverable, and reads as fair** *(new 2026-08-17)* | Teams hold 3 same-side districts anyway, get capped at ×1.4, and feel cheated at 17:15 rather than warned at 11:05 | Stage 1 (cold-read check) and Stage 3 (does the reveal land) |
 
 ### The two that should still happen
 

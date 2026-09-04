@@ -77,7 +77,7 @@ Twenty-three things a participant must hold. Ranked by cognitive cost against de
 | 15–18 | Post heats, par, payouts, optional | low | high | keep |
 | 19 | 7 objects × 5 KD | low | med | keep |
 | 20 | All members in photo | low | high | keep |
-| 21 | 16:30 deadline | low | high | keep |
+| 21 | 16:45 deadline | low | high | keep |
 | 22 | Leftover cash counts 1:1 | low | high | keep |
 | 23 | Final score formula, 3 terms | high | — | simplifies to 2 terms after 13 |
 

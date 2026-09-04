@@ -14,7 +14,7 @@ comparison that re-litigates Form-vs-something-else for the *input* is solving a
 question.
 
 What's open is the layer above it: how raw `Transactions` rows become the derived tabs, live,
-correctly, over the 4.5-hour window, with 25 teams submitting concurrently — and who can fix
+correctly, over the ~4h10m window, with 25 teams submitting concurrently — and who can fix
 it if it breaks at 14:00, given teams are unsupervised beyond their two leaders and volunteers,
 not participants, are this event's binding constraint (root `CLAUDE.md`).
 

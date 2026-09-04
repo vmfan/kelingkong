@@ -71,20 +71,22 @@ action per mission.
 
 ## Broadcast schedule
 
-**Decided 2026-08-20, revised same day, revised again 2026-08-31 (five missions → four).**
+**Decided 2026-08-20, revised same day, revised again 2026-08-31 (five missions → four),
+revised again 2026-09-04 (confirmed venue times).**
 *When* the missions fire, independent of what
 they say (mission text and `penalty_kd` stay open — see "What's still open" below). Built
-against `operations.md`'s rundown: dispersal 10:30, first heats 10:45, lunch ~12:00–13:30,
-last heats 16:00, Form close 16:30.
+against `operations.md`'s rundown: dispersal 11:05, first heats 11:30, heats paused
+12:30–13:45 for lunch, lunch ~12:00–13:30, last heats 16:30, Form close 16:45.
 
 ### The post-heat clash, and why two changes together fix it
 
 The first pass of this schedule only offset mission times 5 minutes from the heat
 quarter-hours, which avoided the *chat-message* collision but not the underlying one: heats
-(`game-posts.md`) run continuously every 15 minutes from 10:45–16:00, so **some** heat is
-always in progress somewhere, and a team caught mid-heat when a mission fires has to choose
-between the game and the photo. No choice of broadcast time removes this — it's structural,
-not a scheduling bug — but two changes together make it a non-issue:
+(`game-posts.md`) run every 15 minutes from 11:30–16:30 (paused 12:30–13:45 for lunch, added
+2026-09-04 — 2025's heats ran straight through), so whenever heats are running, **some** heat
+is always in progress somewhere, and a team caught mid-heat when a mission fires has to choose
+between the game and the photo. No choice of broadcast time removes this during heat hours —
+it's structural, not a scheduling bug — but two changes together make it a non-issue:
 
 1. **The window widened from 15 to 20 minutes** (`economy.md`, `rules.md` §5, both updated
    2026-08-20). Since heats cap at 15 minutes, `window − 15` is a hard floor on how much of
@@ -113,47 +115,60 @@ under two hours, while the rest of the day carried only one. Dropping to four an
 the afternoon gaps to 45 minutes apiece removes the cluster without touching any constraint
 below.
 
+**Revised again 2026-09-04 — retimed against the confirmed venue schedule.** `operations.md`
+item 1 closed with real numbers (dispersal 11:05, first heat 11:30, heats paused 12:30–13:45
+for lunch, last heat 16:30, Form close 16:45), replacing the placeholder times this table was
+built against. Re-derived below using the same method as the 2026-08-31 revision — nothing
+about the method changed, only the inputs.
+
 | Mission | `issued_at` | `deadline` (20 min) | Rationale |
 |---|---|---|---|
-| M1 | 10:59 | 11:19 | ~29 min after dispersal, 1 min before the 11:00 heat — teams have reached a first landmark, well clear of lunch |
-| M2 | 13:44 | 14:04 | Earliest slot on this offset that's fully clear of lunch (`issued_at ≥ 13:30`) |
-| M3 | 14:29 | 14:49 | +45 min |
-| M4 | 15:14 | 15:34 | +45 min — even spacing with M3 (was +30/+30 into a fifth mission at 15:29 before this revision). 56 minutes clear of the 16:30 Form close, and still finishes well before the 16:00 last-heats crunch |
+| M1 | 11:29 | 11:49 | ~24 min after the 11:05 dispersal, 1 min before the **first** heat of the day (11:30) — since no heat has fired yet, every team gets the full 20-minute window with zero heat-clash risk. 11 min clear of lunch (`11:49 ≤ 12:00`) |
+| M2 | 13:44 | 14:04 | Unchanged from the 2026-08-31 schedule. Earliest slot on this offset that's fully clear of lunch (`issued_at ≥ 13:30`) — and, with heats now paused until 13:45, also fires 1 min before heats *resume* rather than mid-cycle, the same zero-clash property as M1 |
+| M3 | 14:44 | 15:04 | +60 min |
+| M4 | 15:44 | 16:04 | +60 min — even spacing with M3. Deadline is 26 minutes clear of the 16:30 last heat (matching the 2026-08-31 schedule's own 26-minute buffer to its last-heats time) and 41 minutes clear of the 16:45 Form close |
 
 Constraints that produced these times, so a future reader can re-derive them if the rundown
-shifts (`operations.md` open item 1, "Confirm event timings against venue"):
+shifts again (`operations.md` open item 1 — closed 2026-09-04, but the method still applies if
+venue times ever change):
 
 - **No mission's window (issued_at → issued_at+20) touches lunch.** For a morning slot this
   means `issued_at + 20 ≤ 12:00`, i.e. `issued_at ≤ 11:40`; for an afternoon slot it means
-  `issued_at ≥ 13:30`. Combined with the `:14/:29/:44/:59` offset (below), the latest safe
-  morning slot on that phase is `10:59` and the earliest safe afternoon slot is `13:44` — both
-  used above.
-- **Nothing before ~11:00.** Teams need time to actually reach their first landmark after the
-  10:30 dispersal before the first mandate lands.
-- **Afternoon missions evenly spaced at 45 minutes**, not packed toward the lunch-end
-  boundary. The three afternoon slots (13:44 / 14:29 / 15:14) fill the safe afternoon range
-  end to end rather than clustering early with a long gap before the Form close.
-- **Nothing after ~15:14.** `deadline` (15:34) leaves 56 minutes of clear runway before the
-  16:30 Form close and finishes before the 16:00 last-heats crunch entirely, so a team that
-  misses this one at the buzzer still has time to travel and submit before the Form closes.
-- **Times land on `:59`/`:14`/`:29`/`:44`** — one minute *before* the next heat's
+  `issued_at ≥ 13:30`. Lunch's clock time (12:00–13:30) is unchanged from the previous
+  revision, so this bound didn't move. Combined with the `:14/:29/:44/:59` offset (below), the
+  latest slot on that phase satisfying `issued_at ≤ 11:40` is `11:29` — used above.
+- **Nothing before ~11:29 (~24 min after the 11:05 dispersal).** Teams need time to actually
+  reach their first landmark before the first mandate lands. The old buffer was ~29 minutes off
+  a dispersal that happened to sit on a quarter-hour (10:30); the new dispersal (11:05) doesn't,
+  so the nearest safe `:14/:29/:44/:59` slot that still clears lunch gives a slightly tighter
+  ~24-minute buffer instead — still comfortably above the 18.6-minute worst-case ETA among the
+  8 starting districts (`operations.md`, "Starting district assignment").
+- **Afternoon missions evenly spaced at 60 minutes**, not 45. The later Form close (16:45) and
+  later last-heats time (16:30) open up more safe afternoon room than the 2026-08-31 schedule
+  had; filling that range end to end per the same "don't cluster" principle now yields 60-minute
+  gaps (13:44 / 14:44 / 15:44) instead of 45.
+- **Nothing after ~15:44.** `deadline` (16:04) leaves 41 minutes of clear runway before the
+  16:45 Form close and finishes 26 minutes before the 16:30 last heat, so a team that misses
+  this one at the buzzer still has time to travel and submit before the Form closes.
+- **Times land on `:14`/`:29`/`:44`/`:59`** — one minute *before* the next heat's
   quarter-hour start, not just after it. See "The post-heat clash" above for why this phase
   (biased toward the end of the heat cycle) beats the originally-considered `:05`/`:20`/`:35`/
   `:50` phase (biased toward the start): both avoid the chat-message collision equally, but
   this one skews more teams into the generous case when a heat is in progress at broadcast
-  time.
+  time. This phase is unaffected by the 2026-09-04 retime, since both the old and new first-heat
+  times (10:45, 11:30) sit on the same underlying quarter-hour cadence.
 
-Gaps between missions: a lunch-spanning gap between M1 and M2, then an even 45 minutes
+Gaps between missions: a lunch-spanning gap between M1 and M2, then an even 60 minutes
 between each afternoon mission. Any other 15-minute increment on the same
 `:14/:29/:44/:59` phase that respects the lunch and end-of-day bounds works equally well;
 this is one valid solution, not the only one — but it should stay *even*, per the 2026-08-31
 revision, rather than reintroduce a cluster.
 
-**Applied to the live Sheet, 2026-08-31.** The 2026-08-20 pass had pre-filled a five-mission
-version of this schedule (`M1`–`M5`: 10:59 / 13:44 / 14:29 / 14:59 / 15:29 — see
-`ledger-system.md`, "Window widened to 20 minutes, schedule pre-filled"). Re-applied to match
-the four-mission schedule above: `M5` row deleted, `M4`'s `issued_at` retimed from `14:59` to
-`15:14`, `deadline` left as the existing `issued_at + 20 min` formula. `M1`–`M3` untouched.
+**Not yet applied to the live Sheet (as of 2026-09-04).** The live `Missions` tab still holds
+the 2026-08-31 values (`M1`–`M4`: 10:59 / 13:44 / 14:29 / 15:14). It needs `M1` retimed
+10:59→11:29, `M3` retimed 14:29→14:44, and `M4` retimed 15:14→15:44; `M2` (13:44) is unchanged.
+`deadline` stays the existing `issued_at + 20 min` formula. See `operations.md` open item 24
+(reopened 2026-09-04) and `economy.md`'s 2026-09-04 calibration log entry.
 
 ## 2. `doPost`: new `action = "mission"`
 

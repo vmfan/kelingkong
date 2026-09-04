@@ -161,7 +161,7 @@ Cocok dikerjakan sambil jalan atau sambil menunggu sesi pos berikutnya.
 
 ## 7. Hal-hal penting
 
-- **Batas akhir semua pengiriman: 16:30.**
+- **Batas akhir semua pengiriman: 16:45.**
 - Semua anggota tim harus ada di dalam foto atau video supaya tugas **dan pembelian** dihitung.
 - **Semua foto dan video diperiksa panitia.** Kalau buktinya tidak menunjukkan tim kalian
   berada di landmark itu, pengiriman kalian **dibatalkan** — uangnya ditarik kembali dan
@@ -200,4 +200,4 @@ atau simpan uangnya?
 5. Mampir ke pos permainan kalau sempat — hadiahnya lumayan, dan kalian ketemu tim lain.
 6. Kalau ada pesan **🚨 RAZIA PAJAK** di grup chat, langsung buka halaman Kelingkong — kalian
    punya 20 menit sebelum kena denda.
-7. Selesai jam 16:30. Santai saja, 6 landmark sudah bagus.
+7. Selesai jam 16:45. Santai saja, 6 landmark sudah bagus.

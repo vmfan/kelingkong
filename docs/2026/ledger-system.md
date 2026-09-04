@@ -67,10 +67,10 @@ collapses both into a single failure, and reads are what 250 people depend on co
 1. **It removes a forced Google sign-in.** A Google Form containing a file-upload question
    requires every respondent to sign in to a Google account; there is no anonymous-upload
    setting. `operations.md` requires a photo on *every* action including `buy`, so the Form
-   design walks 25 teams into a login wall at 10:45 — and into an outside-the-organisation
+   design walks 25 teams into a login wall at 11:30 — and into an outside-the-organisation
    wall too, if the Sheet lives in a Workspace account. This alone decided it.
 2. **Write-time validation** a Form cannot do: reject an unaffordable purchase, a duplicate
-   buy, a post-16:30 submission, an unknown landmark, a `game-posts.md` cooldown violation.
+   buy, a post-16:45 submission, an unknown landmark, a `game-posts.md` cooldown violation.
 3. **The team learns what it paid immediately** rather than waiting for the board to refresh.
 4. **Client-side photo downscale** to ~200 KB instead of a 4 MB original. Across ~550
    submissions that is ~3 GB → ~150 MB, which matters for mobile data and for the free
@@ -368,3 +368,11 @@ dropped, `M4` retimed 14:59→15:14); see `economy.md`'s 2026-08-31 calibration 
 why. Live `Missions` tab updated to match — `M5` row removed, `M4`'s `issued_at` retimed to
 15:14 (2026-09-12), `deadline` unchanged as a formula (`issued_at + 20 min`). `M1`–`M3`
 untouched.
+
+**Superseded again 2026-09-04, not yet re-applied.** `operations.md` open item 1 closed with
+confirmed venue times, moving the rundown this schedule was built against. `missions-build-
+spec.md`'s "Broadcast schedule" now specifies `M1`–`M4` = 11:29 / 13:44 / 14:44 / 15:44 (see
+`economy.md`'s 2026-09-04 calibration log entry). The live `Missions` tab still holds the
+2026-08-31 values and needs `M1` retimed 10:59→11:29, `M3` retimed 14:29→14:44, and `M4`
+retimed 15:14→15:44 (all 2026-09-12); `M2` (13:44) is unchanged. Tracked in `operations.md`
+open item 24 (reopened 2026-09-04).

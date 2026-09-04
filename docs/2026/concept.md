@@ -22,10 +22,12 @@ the direct fix for a day that felt rushed.
 
 ## How pacing is enforced
 
-Everything is derived from one number: **a team should own 5–6 landmarks by 16:30.**
+Everything is derived from one number: **a team should own 5–6 landmarks by 16:45.**
 
-About 4.5 hours of the day is live exploration once assembly, lunch and closing are
-subtracted. A landmark costs a team 25–40 minutes all in — travel, finding it, doing the
+About 4h10m of the day is live exploration once assembly, lunch and closing are
+subtracted (confirmed against venue times 2026-09-04 — see `operations.md`; down slightly
+from the 4.5h this section's target was originally sized against). A landmark costs a team
+25–40 minutes all in — travel, finding it, doing the
 task, deliberating, submitting. That puts a comfortable day at 5–6 landmarks and a
 sprint at 9–11.
 
@@ -55,7 +57,7 @@ Three mechanisms hold the pace there:
    about 5. Money forces choices *between* landmarks rather than rewarding speed.
 
 **Staggered starting districts** prevent a fourth failure mode: all 250 people converging
-on the same landmarks at 10:30 because set bonuses point everyone toward the same
+on the same landmarks at 11:05 because set bonuses point everyone toward the same
 "obviously good" cluster. Each team is assigned a different district to start in — but
 only from the 8 nearest, cheapest districts, not all 13. The far districts are priced on
 the assumption that going there is a *chosen* bet; assigning one by lottery would turn

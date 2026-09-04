@@ -13,6 +13,15 @@ original report as written before that decision, kept intact so the reasoning st
 traceable — the findings drove the decision, not the other way around. Every other open
 item in `operations.md` remains unchanged.
 
+**Stale as of 2026-09-04 — budget parameter no longer matches the confirmed rundown.**
+Every result below was generated with a 270-minute exploration budget (the "270-minute
+budget" bullet under `## Method`). `operations.md` item 1 closed the same day with confirmed venue times
+that put live exploration at ~4h10m (250 minutes), not 270 — a ~7% reduction. The result
+tables and any conclusion drawn from them (far/near gap size, completion rates, the
+farm-and-leave comparison) have not been regenerated against the new budget. See
+`operations.md` open item 27 before relying on this document for any further pricing
+decision.
+
 ## What this replaces, and what it doesn't
 
 `playtest.md`'s design interview (Part 2) had five stages. Stages 4 and 5 (dwell-time

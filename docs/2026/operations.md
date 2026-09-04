@@ -2,23 +2,26 @@
 
 ## Rundown
 
-Times are the 2025 shape, which the pacing model assumes. Confirm against venue
-availability before printing.
+**Confirmed against venue availability 2026-09-04** — see item 1, closed below.
 
 | Time | What |
 |---|---|
-| 09:30 | Committee and post staff on site; posts set up |
-| 10:00 | Participants assemble; teams and starting districts announced |
-| 10:30 | Briefing ends, teams disperse. **First heats fire at 10:45** |
-| ~12:00–13:30 | Lunch, taken wherever teams happen to be |
-| 16:00 | Last heats |
-| **16:30** | **Submission deadline — Form closes** |
-| 16:30–17:00 | Regroup, standings finalised |
-| 17:00 | Closing and results |
+| 08:00 | Committee and post staff on site; posts set up |
+| 09:45 | Participants assemble; opening and other talks before the game starts |
+| 11:05 | Briefing ends, teams disperse |
+| 11:30 | First heats fire |
+| 11:30–12:30 | Heats run every 15 min |
+| ~12:00–13:30 | Lunch, taken wherever teams happen to be — **heats paused within this window** (new for 2026; 2025's heats ran straight through lunch) |
+| 13:45 | Heats resume |
+| 16:30 | Last heats (run until 16:45) |
+| **16:45** | **Submission deadline — Form closes** |
+| 16:45–17:15 | Regroup, standings finalised |
+| 17:15 | Closing and results |
 
-Live exploration is roughly 10:30–16:30 minus lunch ≈ **4.5 hours**, the number every
-pacing decision derives from. If the schedule compresses, the 6-landmark target and the
-prices derived from it need revisiting — see `economy.md`.
+Live exploration is roughly 11:05–16:45 minus lunch ≈ **4h10m** (down from the 4.5h the
+pacing model was built against — a ~7% compression from the confirmed venue times, 2026-09-04).
+If the schedule compresses, the 6-landmark target and the prices derived from it need
+revisiting — see `economy.md`, and open item 27 below.
 
 Base and regroup point in 2025 was BNI Admiralty; all travel times in
 `../../data/landmarks.csv` are measured from there.
@@ -70,7 +73,7 @@ complaint worse, so it is a real cost, not a free adjustment.
 ### Briefing the leaders
 
 The two leaders travelling with each team are the **only real-time feedback the design
-has**. Scores land at 17:00, far too late to change how a team spent its afternoon, so
+has**. Scores land at 17:15, far too late to change how a team spent its afternoon, so
 anything that needs correcting during the day has to come from them.
 
 Five things they must know, in this order:
@@ -124,7 +127,7 @@ tells the team what it paid on the spot.
 **Apps Script rather than a Google Form, for one decisive reason:** a Form carrying a
 file-upload question forces every respondent to sign in to a Google account, with no
 anonymous option. Since photo/video proof is required on every action (below), the Form
-design walks 25 teams into a login wall at 10:45. See `ledger-system.md`.
+design walks 25 teams into a login wall at 11:30. See `ledger-system.md`.
 
 **Photo or video proof is required on every action, including `buy`.** `buy` and `task` are logged as
 independent submissions, so without this a team could earn task money at one landmark and
@@ -285,7 +288,7 @@ Ordered by deadline.
 
 | # | Item | Deadline | Notes |
 |---|---|---|---|
-| 1 | Confirm event timings against venue | Week 1 | Everything downstream assumes 4.5 h of exploration |
+| 1 | Confirm event timings against venue | Week 1 | **Closed 2026-09-04.** Confirmed rundown: committee 08:00, assemble 09:45, disperse 11:05, first heat 11:30, heats paused 12:30–13:45 for lunch (new — 2025's heats ran through lunch), last heat 16:30 (ends 16:45), submission deadline 16:45, closing 17:15. Live exploration drops from the assumed 4.5h to ~4h10m — see the Rundown section above and item 27 |
 | 2 | Leader recruitment to ~50 | Week 1 | Critical path; gates team count |
 | 3 | Build the ledger | Week 1 | **Done 2026-08-19.** Sheet (10 tabs), Apps Script write layer deployed, and the participant page (`../../web/index.html`) built and tested end-to-end against the live endpoint. Lock, idempotency and price cap all verified; a 120-submission 25-team day matched an independent recomputation exactly. **Remaining: publish the 4 CSV tabs (see `../../web/README.md`) and build the backup Form.** See `ledger-system.md` |
 | 4 | Assign the rain-decision owner | Week 1 | One named person, not "the committee" |
@@ -294,7 +297,7 @@ Ordered by deadline.
 | 7 | Economy validation | Week 2 | **No field run and no design interview** — committee away for the summer. Replaced by desk analysis (done) plus a Monte Carlo simulation of the 25-team day (`scripts/simulate_playtest.py`, results in `docs/2026/simulated-playtest.md`). Dwell time and comprehension rate stay unmeasured into event day; both were swept as sensitivity parameters instead, not measured — that risk is recorded there |
 | 8 | Verify the `Vission` spelling | Week 2 | Cannot go on a printed map unresolved |
 | 9 | Indoor substitutes for Posts 1 and 3 | Week 3 | Part of the rain plan |
-| 10 | Print maps, price lists, timetables | Week 3 | Hard dependency on 6, 7 and 11. QR codes on each team's map point to `https://vmfan.github.io/kelingkong/index.html?tim=N&key=...` — **live and verified 2026-08-21** (see `../../web/README.md` Hosting section). `key` added 2026-08-31 to stop team-spoofed submissions (item 25); `TeamKeys` populated and team count fixed at 21 (item 26), both verified live 2026-09-01. Still needed: generate the 21 per-team QR images from `scripts/generate_team_keys.py`'s URL list for the print run |
+| 10 | Print maps, price lists, timetables | Week 3 | Hard dependency on 6, 7 and 11. QR codes on each team's map point to `https://vmfan.github.io/kelingkong/index.html?tim=N&key=...` — **live and verified 2026-08-21** (see `../../web/README.md` Hosting section). `key` added 2026-08-31 to stop team-spoofed submissions (item 25); `TeamKeys` populated and team count fixed at 21 (item 26). **QR images generated 2026-09-01** — `print/qr/tim-01.png`…`tim-21.png`, built by `scripts/generate_team_qr.py` from `scripts/team-keys.csv` (a checked-in snapshot of the live, deployed `TeamKeys` values — not a fresh key regeneration). Ready to place on the printed maps; still needed: the maps/price lists/timetables themselves |
 | 11 | **Apply or discard the compressed price table** | Week 3 | **Applied 2026-08-18.** Simulation showed the same-side cap alone left a 90–105 point residual far/near gap under realistic 25-team price-ladder contention — wider than the 2026-08-17 desk estimate assumed. Top-only compression applied at ratio 0.45 (`scripts/apply_price_compression.py`): narrowed the simulated gap by 25–37% across every scenario tested without touching near-crossing's affordability. Full record in `economy.md`'s calibration log and `simulated-playtest.md` |
 | 12–15 | ×2.2 ambiguity · restate pace · cap multiplier at 3 · cut best-2 cap | — | **CLOSED 2026-08-17.** All four are superseded by the set-bonus revision, which removes the depth tier table and the best-2 cap outright. See the calibration log in `economy.md` |
 | 16 | **Print task income in KD, not as "30%"** | Week 3, with printing | **Done in `rules.md`**, which now says the figure is on the price list. Remaining work is putting the number on the printed list and map |
@@ -305,9 +308,10 @@ Ordered by deadline.
 | 21 | **Watch the farm-and-leave gap at Kai Tak** | Ongoing, from event day 1 | Simulation found that visiting Kai Tak, doing all 4 tasks, and buying nothing already outscores the taught ×1.8 near-crossing build even before item 20's boost (240 vs. 180), and the boost widens it further (→280). No mechanical fix was adopted — see `economy.md` calibration log, 2026-08-19 decision entries, and `simulated-playtest.md`'s "Farm-and-leave, quantified" section. Unlike item 19, this is not bounded by an existing cap; if it's visibly happening on the day, it needs a same-day call, not a wait-and-see |
 | 22 | **Brief the bankers on the verification queue** | Week 3 | Added 2026-08-19 with photo review. They need: how to read `Kontrol` block 7, what a good photo looks like (whole team, at the landmark), that ticking `diperiksa` only marks it seen, and that voiding is done by typing `void` into `Transactions!K`. Also that a void is visible to the team immediately — so tell the team's leader, don't let them discover it on the board |
 | 23 | **Publish the `objek` CSV tab and paste the URL into `web/index.html`'s `CONFIG.CSV.objek`** | Week 3 | Added 2026-08-20 with surprise missions. Seeded with 2025's 7 objects at 5 KD each; until published the page falls back to its hardcoded `CONFIG.OBJECTS` list, which already matches |
-| 24 | **Apply the widened mission window and retimed broadcast schedule to the live Sheet** | Week 3, before printing | **Reopened 2026-08-31, re-closed same day.** Originally closed 2026-08-20 against a five-mission schedule (`Missions!deadline` = `issued_at + 20 min`, `M1`–`M5`: 10:59 / 13:44 / 14:29 / 14:59 / 15:29, all 2026-09-12). Reopened when that schedule was superseded by a four-mission version (`M5` removed, `M4` retimed to 15:14) to fix an afternoon clustering issue (`economy.md`, 2026-08-31 calibration log entry). Live `Missions` tab now updated to match: `M5` row deleted, `M4`'s `issued_at` retimed to 15:14 (2026-09-12), `deadline` formula unchanged. `M1`–`M3` untouched |
-| 25 | **Stop team-spoofed submissions** | Week 3, before printing | Added 2026-08-31, **closed 2026-09-01**. `team` was previously a self-asserted number with nothing checking it — anyone reading the endpoint URL out of the page source could POST as any team. `Code.gs` now rejects any submission whose `key` doesn't match that team's row in `TeamKeys` (see "The ledger" above), checked before `Transactions` is touched. `TeamKeys` is populated (21 rows, matching item 26) and deployed live; verified end-to-end — wrong key, missing key and cross-team key reuse all rejected before any Sheet write. Only remaining step, folded into item 10: generate the 21 printed QR images from `scripts/generate_team_keys.py`'s URL list |
+| 24 | **Apply the widened mission window and retimed broadcast schedule to the live Sheet** | Week 3, before printing | **Reopened 2026-09-04 — not yet re-closed.** Previously reopened 2026-08-31, re-closed same day against a four-mission schedule (`M1`–`M4`: 10:59 / 13:44 / 14:29 / 15:14, all 2026-09-12). Reopened again now that item 1's venue-time confirmation moved the rundown (11:05 disperse / 11:30 first heat / heats paused 12:30–13:45 / 16:30 last heat / 16:45 deadline): the schedule is re-derived to `M1`–`M4` = 11:29 / 13:44 / 14:44 / 15:44 (`missions-build-spec.md`, "Broadcast schedule"; `economy.md`, 2026-09-04 calibration log entry). Live `Missions` tab still holds the 2026-08-31 values (`M1` 10:59, `M3` 14:29) and needs `M1`, `M3` and `M4`'s `issued_at` retimed to match — `M2` (13:44) is unchanged. `Code.gs`'s `CONFIG.DEADLINE` also needs redeploying at the new `16:45` value (updated in this repo, not yet pushed live — see `apps-script/Code.gs`) |
+| 25 | **Stop team-spoofed submissions** | Week 3, before printing | Added 2026-08-31, **closed 2026-09-01**. `team` was previously a self-asserted number with nothing checking it — anyone reading the endpoint URL out of the page source could POST as any team. `Code.gs` now rejects any submission whose `key` doesn't match that team's row in `TeamKeys` (see "The ledger" above), checked before `Transactions` is touched. `TeamKeys` is populated (21 rows, matching item 26) and deployed live; verified end-to-end — wrong key, missing key and cross-team key reuse all rejected before any Sheet write. QR images generated (see item 10) |
 | 26 | **Finalize the team count everywhere "25" is assumed** | Before Aug 31 printing window | Added 2026-08-31, **closed 2026-09-01 — fixed at 21 teams of 10**, matching 2025's actual count rather than growing to the 25 originally targeted (`concept.md`). All three groups resolved: (1) **Mechanical:** `Code.gs`'s `CONFIG.TEAMS` set to 21 and redeployed live; `TeamKeys` trimmed to 21 rows (teams 22–25 removed); `--teams` defaults on `generate_team_keys.py`/`seed_transactions.py` updated to 21; `web/index.html`'s prompt fallback updated to "(1-21)?". Verified live: team 22 now rejected `bad_team`, team 21 still submits normally. (2) **Judgement call — re-ran the simulation, no repricing needed:** set `simulate_playtest.py`'s `TEAMS = 21` and re-ran `--compare-crossing --runs 200 --seed 42` against the same board this repo ships. The far/near gap **widened slightly, not narrowed**, at 21 vs. 25 teams (dwell20/25: 49.9→53.0; dwell35: 58.1→60.4 — a ~6–10% shift, same direction as before). Fewer teams means less price-ladder contention, which if anything makes far-crossing marginally more attainable, not less — item 11's 0.45 compression ratio is not invalidated by the count change and stays as applied. Full context in `economy.md`'s calibration log, 2026-09-01 entry. (3) **Prose:** `concept.md` and this file's People table and round-robin section updated to 21/210/~42. `economy.md`'s dated calibration-log entries (historical record of decisions made under the 25-team assumption at the time) are deliberately left as-is; only forward-looking/current-state text was updated |
+| 27 | **Re-validate the pacing model against the confirmed venue times** | Before printing | Added 2026-09-04 with item 1's closure. Live exploration drops from the assumed 4.5h to ~4h10m (~7% compression) — the Rundown section's own standing warning is that a compressed schedule means "the 6-landmark target and the prices derived from it need revisiting." `simulated-playtest.md`'s Monte Carlo run was built on a 270-minute budget and is now stale; rerun `scripts/simulate_playtest.py` with the new budget before trusting its far/near-gap findings for any further pricing decision. Not attempted as part of this retime — judgement call for the committee, same as item 7 |
 
 **Anything unresolved by 24 August should default to 2025 behaviour rather than stay
 open.**

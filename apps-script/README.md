@@ -106,7 +106,7 @@ python3 ../scripts/seed_transactions.py --url <exec-url> --keys-csv <team-keys.c
 - **`access: ANYONE_ANONYMOUS`** — this is the whole reason the write layer is
   not a Google Form. A Form carrying a file-upload question requires every
   respondent to sign in to a Google account, which would put 25 teams behind a
-  login wall at 10:45 on event day.
+  login wall at 11:05 on event day.
 
 Re-deploy with `clasp deploy` after any change — `clasp push` alone updates the
 code but **not** the live web-app URL's served version.
