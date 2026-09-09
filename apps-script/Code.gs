@@ -51,7 +51,11 @@ const CONFIG = {
   // If one is edited the other must be too, or the page advertises a figure the ledger
   // does not honour.
   TASK_RATE_BY_DISTRICT: { 'Kai Tak': 0.50 },
-  LOCK_WAIT_MS: 60000,
+  // Raised from 60000 2026-09-09: live load test measured p99 lock-wait at 54-60s under a
+  // 21-team simultaneous burst (mission broadcast / heat-end). 90s gives real headroom above
+  // the observed worst case. web/index.html's WRITE_TIMEOUT_MS is raised in lockstep to keep
+  // the same margin above this value, so the client never times out before this does.
+  LOCK_WAIT_MS: 90000,
 };
 
 // Transactions column layout. Everything downstream (Ledger, Standings,
