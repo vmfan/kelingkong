@@ -88,6 +88,10 @@ def check_csv_integrity(rows):
             price.isdigit() and int(price) > 0,
             f"landmarks.csv line {i}: {name or '?'} has non-integer base_price {price!r}",
         )
+        check(
+            (row.get("task_description") or "").strip(),
+            f"landmarks.csv line {i}: {name or '?'} has no task_description",
+        )
         eta = (row.get("eta_from_bni_min") or "").strip()
         check(
             eta.isdigit(),

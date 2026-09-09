@@ -1,52 +1,52 @@
-canonical_name,district_2026,region_rules_2025,zone_landmarks_2025,base_price,base_price_precompression,points_2025,nearest_mtr,walk_from_mtr_min,eta_from_bni_min,task_type,aliases,notes
-United Centre,Admiralty,HK Island,Zone 2,10,10,1,Admiralty,0,5,photo,United Center,MTR-connected
-Pacific Place,Admiralty,HK Island,Zone 2,10,10,1,Admiralty,0,9,photo,Pacific place,MTR-connected
-The Henderson,Admiralty,HK Island,Zone 2,10,10,1,Admiralty,0,7,photo,,Listed under Central on the Landmarks tab; grouped with Admiralty for walking distance
-Lan Kwai Fong,Central,HK Island,Zone 2,10,10,1,Central,6,11,photo,LKF,
-Central Market,Central,HK Island,Zone 2,10,10,1,Central,8,13,detail,,
-Tai Kwun,Central,HK Island,Zone 2,20,20,2,Central,11,16,riddle,Tai Kwun (Prison),
-AIA Ferris Wheel,Central,HK Island,Zone 2,30,30,3,Central,12,17,photo,Hong Kong Observation|AIA Ferris Wheel + Pier|HK observatory wheel,
-Vission Bakery,Central,HK Island,Zone 2,30,40,4,Central,12,18,riddle,Vission,Spelling confirmed 2026-08-31 - see docs/2025/data-audit.md item 7.
-Man Mo Temple,Sheung Wan,HK Island,Zone 2,30,30,3,Sheung Wan,8,15,riddle,Man Mo temple,
-Hollywood Road Park,Sheung Wan,HK Island,Zone 2,20,20,2,Sheung Wan,9,16,photo,Hollywood Road Soho,
-PMQ,Sheung Wan,HK Island,Zone 2,30,30,3,Sheung Wan,10,18,detail,,
-Tsim Chai Kee,Sheung Wan,HK Island,Zone 2,20,20,2,Central,8,14,food,Tsim Chai Kee Noodle,
-Times Square,Causeway Bay,HK Island,Zone 2,10,10,1,Causeway Bay,5,13,photo,Times square,
-Bakehouse,Causeway Bay,HK Island,Zone 2,10,10,1,Causeway Bay,1,10,food,,
-KJRI Hong Kong,Causeway Bay,HK Island,Zone 2,20,20,2,Causeway Bay,6,14,photo,KJRI HK|KJRI,Indonesian Consulate General
-Victoria Park,Causeway Bay,HK Island,Zone 2,20,20,2,Tin Hau,5,15,photo,Victoria park,
-Hong Kong Exhibition Centre,Wan Chai,HK Island,Zone 2,30,30,3,Exhibition Centre,0,10,detail,Hong Kong Exhibition|HKCEC|Exhibition Center,
-Lee Tung Avenue,Wan Chai,,Zone 2,20,20,,Wan Chai,5,12,photo,Lee tung avenue,Added 2026 from unused 2025 brainstorm; price estimated from district
-Southorn Playground,Wan Chai,,Zone 2,20,20,,Wan Chai,3,12,photo,Southorn playground,Added 2026 from unused 2025 brainstorm; price estimated from district
-Avenue of Stars,TST Waterfront,TST,Zone 1,10,10,1,TST,12,20,photo,Avenue of stars,
-Bruce Lee Statue,TST Waterfront,TST,Zone 1,20,20,2,TST,12,20,photo,Bruce Lee|Brucelee|Bruce lee statue,On the Avenue of Stars
-K11 Musea,TST Waterfront,TST,Zone 1,10,10,1,TST,12,20,detail,K11,
-Hong Kong Museum of Art,TST Waterfront,TST,Zone 1,10,10,1,TST,9,17,riddle,MOA|Museum of Arts|HKMoA,
-1881 Heritage,TST Waterfront,TST,Zone 1,10,10,1,TST,9,16,riddle,Heritage 1881,
-K11 Art Mall,TST Central,TST,Zone 1,10,10,1,TST,2,11,detail,K11 Artmall|K11 art mall,
-The Peninsula,TST Central,TST,Zone 1,10,10,1,TST,7,14,photo,Peninsula|Peninsula Hotel,
-Kowloon Park,TST Central,TST,Zone 1,20,20,2,TST,8,15,photo,Kowloon park,
-Hashtag B,TST Central,TST,Zone 1,20,20,2,TST,5,12,food,,
-Apple Canton Road,TST Central,TST,Zone 1,30,30,3,TST,8,15,detail,,
-Elements,West Kowloon,TST,Zone 1,30,30,3,Kowloon,6,21,detail,Elementals,
-M+,West Kowloon,TST,Zone 1,30,40,4,Kowloon,9,28,riddle,M+ Museum,Game post 2 is sited here
-West Kowloon Art Park,West Kowloon,TST,Zone 1,40,50,5,Kowloon,15,34,photo,west Kowloon park|West kowloon art park,
-Paper Stone Bakery,Whampoa-Hung Hom,TST,Zone 3,30,40,4,Whampoa,1,21,food,Paperstone|Paper stone bakery,
-Aeon Supermarket,Whampoa-Hung Hom,TST,Zone 3,30,40,4,Whampoa,4,24,detail,Kapal AEON|Aeon,The ship-shaped mall
-Shanxi Cut Noodles,Whampoa-Hung Hom,TST,Zone 3,30,40,4,Whampoa,5,25,food,Ming Hing Shanxi|Shanxi cut noodles,
-Hung Hom Promenade,Whampoa-Hung Hom,TST,Zone 3,40,50,5,Hung Hom,15,27,photo,Hung hom promenade,
-Toko Wijaya,Whampoa-Hung Hom,,Zone 3,30,40,,Whampoa,6,25,detail,Toko wijaya,Added 2026 from unused 2025 brainstorm; Indonesian grocery
-Sneakers Street,Mongkok,Kai Tak,Zone 1,30,30,3,Mong Kok,5,17,photo,Sneaker Street,
-Argyle Centre,Mongkok,Kai Tak,Zone 1,30,30,3,Mong Kok,1,15,detail,Argyle center|Argyle centre,
-Ladies Market,Mongkok,Kai Tak,Zone 1,30,30,3,Mong Kok,5,17,photo,Ladies market,
-Kadorar Bakery,Mongkok,Kai Tak,Zone 1,30,40,4,Yau Ma Tei,2,13,food,Kadorar et Levain|Kadorar bakery,
-Dragon Centre,Sham Shui Po-Prince Edward,Kai Tak,Zone 1,30,40,4,Sham Shui Po,4,21,food,Dragon center|Dragon Center (makan geprek),The 2025 sheet notes this as the geprek stop
-DeDo Bear,Sham Shui Po-Prince Edward,Kai Tak,Zone 1,30,40,4,Sham Shui Po,5,21,photo,DoDo bear|DeDo bear,
-Kam Wah Cafe,Sham Shui Po-Prince Edward,Kai Tak,Zone 1,30,40,4,Prince Edward,6,20,food,Kam Wah|Kam wah cafe,
-AIRSIDE,Kai Tak,Kai Tak,Zone 3,40,50,5,Kai Tak,10,36,detail,Airside,
-Petite First Kai Tak,Kai Tak,Kai Tak,Zone 3,40,50,5,Kai Tak,8,34,photo,Petite First,
-Kai Tak Stadium,Kai Tak,Kai Tak,Zone 3,40,60,6,Kai Tak,10,34,photo,Stadium,Game post 3 is sited here
-Twin Tower,Kai Tak,,Zone 3,40,60,,Kai Tak,10,35,photo,The Twins|Twin Tower,Added 2026 from unused 2025 brainstorm; price estimated from district
-Choi Hung Rainbow,East Kowloon,Kai Tak,Zone 3,50,70,7,Choi Hung,5,36,photo,Rainbow|Choi Hung rainbow,The rainbow basketball courts
-Kowloon Walled City Park,East Kowloon,Kai Tak,Zone 3,50,70,7,Sung Wong Toi,14,37,riddle,Kowloon walled City Park,
-Nan Lian Garden,East Kowloon,Kai Tak,Zone 3,50,70,7,Diamond Hill,6,33,riddle,Nan Lian garden,
+canonical_name,district_2026,region_rules_2025,zone_landmarks_2025,base_price,base_price_precompression,points_2025,nearest_mtr,walk_from_mtr_min,eta_from_bni_min,task_type,aliases,notes,task_description
+United Centre,Admiralty,HK Island,Zone 2,10,10,1,Admiralty,0,5,photo,United Center,MTR-connected,Take a photo with your team anywhere the 'United Centre' sign is clearly visible. All team members must appear. The sign must be clearly visible.
+Pacific Place,Admiralty,HK Island,Zone 2,10,10,1,Admiralty,0,9,photo,Pacific place,MTR-connected,"Take a photo with Pacific Place in the background, each team member forming a 'P' shape with your hands (e.g., one line vertical, one line curved/horizontal to make the loop of the P)."
+The Henderson,Admiralty,HK Island,Zone 2,10,10,1,Admiralty,0,7,photo,,Listed under Central on the Landmarks tab; grouped with Admiralty for walking distance,Take a photo with your team at the water feature/fountain in front of the building. All team members must appear. The water feature must be clearly visible.
+Lan Kwai Fong,Central,HK Island,Zone 2,10,10,1,Central,6,11,photo,LKF,,Take a photo of your team forming a human staircase on the slope or steps anywhere in the LKF area. Arrange yourselves at different heights so that the group looks like a staircase. Make sure the Lan Kwai Fong street scene is visible in the background.
+Central Market,Central,HK Island,Zone 2,10,10,1,Central,8,13,detail,,,"Take a high-angle photo of your team spread out on the heritage staircase. The photographer must shoot from above, and the staircase must be clearly visible."
+Tai Kwun,Central,HK Island,Zone 2,20,20,2,Central,11,16,riddle,Tai Kwun (Prison),,Record a 10 second silent 'detective exploration' video. All members must appear at least once (can be in different shots). No talking. Heritage buildings must be visible.
+AIA Ferris Wheel,Central,HK Island,Zone 2,30,30,3,Central,12,17,photo,Hong Kong Observation|AIA Ferris Wheel + Pier|HK observatory wheel,,"Take a photo of your whole team jumping in the air together, with the AIA Ferris wheel clearly visible in the background. Everyone should try to jump, but it's okay if not all members are fully off the ground."
+Vission Bakery,Central,HK Island,Zone 2,30,40,4,Central,12,18,riddle,Vission,Spelling confirmed 2026-08-31 - see docs/2025/data-audit.md item 7.,Take a photo with your team in front of the Vision pastry shop clearly visible.
+Man Mo Temple,Sheung Wan,HK Island,Zone 2,30,30,3,Sheung Wan,8,15,riddle,Man Mo temple,,Make a 15 second video where each member shows their one-word wish on their phone. Each member must have their own unique wish (no sharing the same wish). All members must appear at least once (same or different frames). The temple facade must be visible. Use your phone creatively!
+Hollywood Road Park,Sheung Wan,HK Island,Zone 2,20,20,2,Sheung Wan,9,16,photo,Hollywood Road Soho,,"Take a photo of your team doing tai chi poses. The park background must be clearly visible. All members must appear. Poses are up to the team, but must be tai chi-inspired."
+PMQ,Sheung Wan,HK Island,Zone 2,30,30,3,Sheung Wan,10,18,detail,,,Take a photo with your team at a staircase with murals. All team members must appear. The staircase and mural must be clearly visible.
+Tsim Chai Kee,Sheung Wan,HK Island,Zone 2,20,20,2,Central,8,14,food,Tsim Chai Kee Noodle,,"Take a photo of your team in front of the Tsim Chai Kee, clearly visible."
+Times Square,Causeway Bay,HK Island,Zone 2,10,10,1,Causeway Bay,5,13,photo,Times square,,Take a photo with any large digital billboards clearly visible. Your whole team must be in the frame.
+Bakehouse,Causeway Bay,HK Island,Zone 2,10,10,1,Causeway Bay,1,10,food,,,"Record a 15-second silent promotion video in front of Bakehouse. No talking, only gestures. All members must appear in the video at least once, and the Bakehouse sign or storefront must be clearly visible."
+KJRI Hong Kong,Causeway Bay,HK Island,Zone 2,20,20,2,Causeway Bay,6,14,photo,KJRI HK|KJRI,Indonesian Consulate General,Take a photo where your team forms 'Merah Putih' using clothing or accessories. The KJRI sign or flag must be visible.
+Victoria Park,Causeway Bay,HK Island,Zone 2,20,20,2,Tin Hau,5,15,photo,Victoria park,,Take a photo of your team with the Queen Victoria statue.
+Hong Kong Exhibition Centre,Wan Chai,HK Island,Zone 2,30,30,3,Exhibition Centre,0,10,detail,Hong Kong Exhibition|HKCEC|Exhibition Center,,Create a 15 second mannequin challenge video with your team anywhere around HKCEC. All team members must appear. Everyone must freeze while the camera moves. HKCEC must be recognizable in at least one shot.
+Lee Tung Avenue,Wan Chai,,Zone 2,20,20,,Wan Chai,5,12,photo,Lee tung avenue,Added 2026 from unused 2025 brainstorm; price estimated from district,Record a 15-second 'fashion show' video. All members must appear at least once. The streetscape must be visible.
+Southorn Playground,Wan Chai,,Zone 2,20,20,,Wan Chai,3,12,photo,Southorn playground,Added 2026 from unused 2025 brainstorm; price estimated from district,"Take a photo of your team on the spectator tribune, posing like supporters cheering for a team. All members must be on the tribune."
+Avenue of Stars,TST Waterfront,TST,Zone 1,10,10,1,TST,12,20,photo,Avenue of stars,,Find any celebrity's handprint on the walk and take a picture of the whole team recreating that star's signature pose next to it.
+Bruce Lee Statue,TST Waterfront,TST,Zone 1,20,20,2,TST,12,20,photo,Bruce Lee|Brucelee|Bruce lee statue,On the Avenue of Stars,"Full team recreates Bruce Lee's iconic fighting stance / ""Wah!"" pose in front of the statue, in sync."
+K11 Musea,TST Waterfront,TST,Zone 1,10,10,1,TST,12,20,detail,K11,,"Locate the spiral/atrium staircase and have the team form a spiral or circle shape, photographed from above or below."
+Hong Kong Museum of Art,TST Waterfront,TST,Zone 1,10,10,1,TST,9,17,riddle,MOA|Museum of Arts|HKMoA,,Pick any artwork on display (visible through a window/entrance counts) and have one teammate recreate its pose or expression.
+1881 Heritage,TST Waterfront,TST,Zone 1,10,10,1,TST,9,16,riddle,Heritage 1881,,Stand beneath the old clock tower and have the team form the clock hands with their arms to show a specific time you're given (e.g. 12:30).
+K11 Art Mall,TST Central,TST,Zone 1,10,10,1,TST,2,11,detail,K11 Artmall|K11 art mall,,"Find an art installation inside and have one teammate hold a ""living statue"" pose matching it for 5 seconds (video)."
+The Peninsula,TST Central,TST,Zone 1,10,10,1,TST,7,14,photo,Peninsula|Peninsula Hotel,,Find a hotel doorman/bellhop in uniform and politely ask for a group photo.
+Kowloon Park,TST Central,TST,Zone 1,20,20,2,TST,8,15,photo,Kowloon park,,Find the flamingo pond/aviary and take a picture of the whole team striking a one-legged flamingo pose.
+Hashtag B,TST Central,TST,Zone 1,20,20,2,TST,5,12,food,,,Take a picture of the team posing next to the Hashtag B mascot on the store's pillar and recreate its pose (peeking from beside the wall).
+Apple Canton Road,TST Central,TST,Zone 1,30,30,3,TST,8,15,detail,,,Take a selfie of the whole group with the Apple logo in frame.
+Elements,West Kowloon,TST,Zone 1,30,30,3,Kowloon,6,21,detail,Elementals,,Team must find the ice skating rink inside the mall and take a picture of everyone posed as if they were shivering from the cold.
+M+,West Kowloon,TST,Zone 1,30,40,4,Kowloon,9,28,riddle,M+ Museum,Game post 2 is sited here,"Pick one visible artwork/exhibit and have the team recreate it as a ""living picture"" (tableau vivant), taken as a photo."
+West Kowloon Art Park,West Kowloon,TST,Zone 1,40,50,5,Kowloon,15,34,photo,west Kowloon park|West kowloon art park,,Team choreographs and performs a synchronized 10-second pose/dance sequence with the Hong Kong skyline as the backdrop (video).
+Paper Stone Bakery,Whampoa-Hung Hom,TST,Zone 3,30,40,4,Whampoa,1,21,food,Paperstone|Paper stone bakery,,Buy two (or more) pastries from the store and take a picture of these pastries with the store logo in the background.
+Aeon Supermarket,Whampoa-Hung Hom,TST,Zone 3,30,40,4,Whampoa,4,24,detail,Kapal AEON|Aeon,The ship-shaped mall,"Find 5 items whose names start with ""K"" and pose holding them fanned out like a hand of cards (photo)."
+Shanxi Cut Noodles,Whampoa-Hung Hom,TST,Zone 3,30,40,4,Whampoa,5,25,food,Ming Hing Shanxi|Shanxi cut noodles,,"Standing outside the shopfront, the team should mimic the noodle-pulling motion in sync (3-second video)."
+Hung Hom Promenade,Whampoa-Hung Hom,TST,Zone 3,40,50,5,Hung Hom,15,27,photo,Hung hom promenade,,"Team forms a human chain along the railing spelling out your team's initials with their hands, filmed as one continuous wide shot (photo)."
+Toko Wijaya,Whampoa-Hung Hom,,Zone 3,30,40,,Whampoa,6,25,detail,Toko wijaya,Added 2026 from unused 2025 brainstorm; Indonesian grocery,Take a group selfie with the person running the store.
+Sneakers Street,Mongkok,Kai Tak,Zone 1,30,30,3,Mong Kok,5,17,photo,Sneaker Street,,"Team forms a ""shoe pyramid"" pose — everyone holding up one shoe, stacked in a triangle shape (photo)."
+Argyle Centre,Mongkok,Kai Tak,Zone 1,30,30,3,Mong Kok,1,15,detail,Argyle center|Argyle centre,,"The whole team should take a picture in front of one of the gates that have the ""Argyle Centre"" logo."
+Ladies Market,Mongkok,Kai Tak,Zone 1,30,30,3,Mong Kok,5,17,photo,Ladies market,,One or more members pretend to haggle with a stall vendor over any item and take a picture of the moment.
+Kadorar Bakery,Mongkok,Kai Tak,Zone 1,30,40,4,Yau Ma Tei,2,13,food,Kadorar et Levain|Kadorar bakery,,"Buy a local pastry and attempt to eat it hands-free, photographed mid-bite."
+Dragon Centre,Sham Shui Po-Prince Edward,Kai Tak,Zone 1,30,40,4,Sham Shui Po,4,21,food,Dragon center|Dragon Center (makan geprek),The 2025 sheet notes this as the geprek stop,Go to the highest floor and take a picture of the abandoned roller coaster.
+DeDo Bear,Sham Shui Po-Prince Edward,Kai Tak,Zone 1,30,40,4,Sham Shui Po,5,21,photo,DoDo bear|DeDo bear,,"Team forms a group hug around the bear statue, everyone making bear-paw hands (photo)."
+Kam Wah Cafe,Sham Shui Po-Prince Edward,Kai Tak,Zone 1,30,40,4,Prince Edward,6,20,food,Kam Wah|Kam wah cafe,,One or more members buy a pineapple bun and balance it on their head for the photo.
+AIRSIDE,Kai Tak,Kai Tak,Zone 3,40,50,5,Kai Tak,10,36,detail,Airside,,Record any tiktok dance at the rooftop sky garden with your team. All members must appear. Sky gardens or architecture must be visible. Maximum 15 seconds.
+Petite First Kai Tak,Kai Tak,Kai Tak,Zone 3,40,50,5,Kai Tak,8,34,photo,Petite First,,"Record a short video of your team doing a cute 'baby pose' (e.g., pretending to sleep, crawling, or making a baby face) somewhere inside or right in front of Petite First."
+Kai Tak Stadium,Kai Tak,Kai Tak,Zone 3,40,60,6,Kai Tak,10,34,photo,Stadium,Game post 3 is sited here,"Record your team doing 3 push-ups somewhere in the stadium area. If push-ups are too difficult, you may do 3 knee push-ups or hold a 3-second plank instead."
+Twin Tower,Kai Tak,,Zone 3,40,60,,Kai Tak,10,35,photo,The Twins|Twin Tower,Added 2026 from unused 2025 brainstorm; price estimated from district,"Take a low-angle photo looking up at both towers, so they appear tall and dramatic in the frame. Your whole team must be visible."
+Choi Hung Rainbow,East Kowloon,Kai Tak,Zone 3,50,70,7,Choi Hung,5,36,photo,Rainbow|Choi Hung rainbow,The rainbow basketball courts,Take a picture with a minimum of 8 different colours in one frame (including your team's outfits/accessories).
+Kowloon Walled City Park,East Kowloon,Kai Tak,Zone 3,50,70,7,Sung Wong Toi,14,37,riddle,Kowloon walled City Park,,"Record a short video of your team reading any 1 Chinese character (hanzi) you can find in the park (from a sign, pavilion name, or information panel). The hanzi must be visible in the video."
+Nan Lian Garden,East Kowloon,Kai Tak,Zone 3,50,70,7,Diamond Hill,6,33,riddle,Nan Lian garden,,Record a 15 second mannequin challenge.
