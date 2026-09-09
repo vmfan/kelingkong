@@ -224,6 +224,13 @@ const CONFIG = {
         },
   // Flip to the backup Form URL if the script dies mid-event. One edit, no redeploy.
   BACKUP_FORM: "",
+  // Shared secret for the member (view-only) link, same "duplicated constant, keep in
+  // sync" pattern as Code.gs's CONFIG.STAFF_KEY. Deliberately not named/shaped like a
+  // permissions flag -- see the &ref= param below -- so a member skimming the address
+  // bar doesn't immediately recognize it as the thing to delete. This is NOT a security
+  // boundary: it's plain client-side JS, so anyone reading this file can find it. It only
+  // raises the bar against casual URL editing, not a deliberate bypass.
+  VIEW_TOKEN: "SET_ME",
   // Off by default: a visible ranked standings tab risks over-competitiveness or
   // pessimism/complacency once the point gap between teams grows large. Flip to
   // true to bring the Klasemen tab back — no other change needed.
@@ -292,6 +299,23 @@ if (TEAM) localStorage.setItem("kk.team", String(TEAM));
 // typing/guessing another team's number isn't enough to submit as them.
 let KEY = params.get("key") || localStorage.getItem("kk.key") || "";
 if (params.get("key")) localStorage.setItem("kk.key", KEY);
+
+// ---- role: leader (default, full access) vs member (?ref=<CONFIG.VIEW_TOKEN>, view-only).
+// Both roles share the same team key -- this is a UI-only distinction, not a new
+// credential. Leaders supervise their team in person, same trust model ledger-system.md
+// already leans on for the shared key itself. `ref` reads like an ordinary
+// referrer/tracking param rather than a permissions flag on purpose -- see CONFIG.VIEW_TOKEN.
+//
+// Unlike TEAM/KEY, an explicit link (one carrying `key`) always wins over whatever role
+// was last stored -- including overwriting storage with "" (leader) when the link has no
+// `ref`. Falling back to localStorage the same way TEAM/KEY do would leave a leader stuck
+// in member mode forever after they so much as open their own team's member link once on
+// the same phone (easy to do by mistake with two QR codes side by side), with no visible
+// way to undo it. localStorage is only for a bare reopen (no `key` at all, e.g. a
+// home-screen shortcut or restored tab) where there's no fresh link to read from.
+const REF = params.get("key") ? (params.get("ref") || "") : localStorage.getItem("kk.ref") || "";
+if (params.get("key")) localStorage.setItem("kk.ref", REF);
+const CAN_SUBMIT = REF !== CONFIG.VIEW_TOKEN;
 
 let DATA = { harga:[], milik:[], tim:[], klasemen:[], aktivitas:[], objek:[] },
     LAST_OK = 0, view = "harga";
@@ -595,8 +619,10 @@ function renderMisi(){
     .some(r => Number(r[0]) === TEAM && r[1] === "mission" && r[2] === MISI.mission_id);
   box.hidden = false;
   $("#misi-txt").textContent = MISI.text;
-  $("#misi-go").disabled = done;
-  $("#misi-go").textContent = done ? "✓ Terkirim" : "Kirim foto";
+  $("#misi-go").disabled = done || !CAN_SUBMIT;
+  $("#misi-go").textContent = done ? "✓ Terkirim"
+    : !CAN_SUBMIT ? "Menunggu ketua tim"
+    : "Kirim foto";
   tickMisi();
   misiTimer = setInterval(tickMisi, 1000);
 }
@@ -773,7 +799,7 @@ function hints(){
 // ---- render ----------------------------------------------------------------
 function render(){
   const t = myTim();
-  $("#teamLbl").textContent = TEAM ? "· Tim " + TEAM : "";
+  $("#teamLbl").textContent = TEAM ? "· Tim " + TEAM + (CAN_SUBMIT ? "" : " · Tampilan Anggota") : "";
   $("#cash").textContent = t ? t[1] + " KD" : "–";
   if (t) $("#sub").textContent = "Skor " + t[7] + " · " + t[2] + " landmark · pengali ×" +
     Number(t[6]).toFixed(1);
@@ -842,9 +868,13 @@ function card(r, own, taskDone){
   // the landmark must not hide the task button. Only the Beli slot changes on ownership.
   const taskBtn = taskDone
     ? '<button class="b-task done" disabled>✓ Tugas selesai</button>'
+    : !CAN_SUBMIT
+    ? '<button class="b-task" disabled>Tugas +' + task + '</button>'
     : '<button class="b-task" onclick="act(\'task\',' + nmAttr + ')">Tugas +' + task + '</button>';
   const buySlot = own
     ? '<button class="done" disabled>✓ Milik kalian</button>'
+    : !CAN_SUBMIT
+    ? '<button class="b-buy" disabled>Beli ' + price + '</button>'
     : '<button class="b-buy" onclick="act(\'buy\',' + nmAttr + ')">Beli ' + price + '</button>';
   return '<div class="card' + (own ? ' mine' : '') + ' ' + sc + '">' +
     '<div class="top"><div><div class="nm">' + esc(nm) + '</div>' +
@@ -907,6 +937,8 @@ function renderObjs(){
     const nAttr = JSON.stringify(name).replace(/"/g,"&quot;");
     return isDone
       ? '<button class="done" disabled>✓ ' + esc(name) + '</button>'
+      : !CAN_SUBMIT
+      ? '<button disabled>' + esc(name) + '</button>'
       : '<button onclick="act(\'object\',' + nAttr + ')">' + esc(name) + '</button>';
   }).join("");
 }
@@ -917,6 +949,10 @@ let pending = null, photo = null;
 function buyTitle(item){ return "Beli " + item + " — " + priceOf(item) + " KD"; }
 
 function act(kind, item, label){
+  // Belt-and-suspenders: every member-view control that could call this is already
+  // disabled/non-interactive (renderHarga/renderObjs/renderMisi), so this should be
+  // unreachable in practice, not a real security boundary (role is UI-only by design).
+  if (!CAN_SUBMIT) return;
   if (!TEAM){ alert("Pilih tim kalian dulu."); return; }
   if (CONFIG.BACKUP_FORM){ location.href = CONFIG.BACKUP_FORM; return; }
   pending = { kind, item };
