@@ -17,7 +17,7 @@ as `bad_key` before it ever reaches these checks. Point it at
 `scripts/generate_team_keys.py`'s stdout redirected to a file; it skips that file's
 comment lines and stops parsing at its URL block automatically.
 
-The four checks, in order of how badly they fail in production:
+The four correctness checks, in order of how badly they fail in production:
 
   --concurrent-buy  Two teams buy the same landmark at the same instant. Both must not be
                     charged the same price. THIS IS THE ONE THAT MATTERS: it passes
@@ -28,6 +28,30 @@ The four checks, in order of how badly they fail in production:
   --load            A full simulated 21-team day, then compare the Sheet's standings against
                     a local recomputation of the same transaction log.
 
+Three throughput/quota checks, added 2026-09-07 to answer a different question: not "is the
+pricing logic correct" (the four above, which pass against an empty log) but "does the script
+still hold up at real end-of-day request volume and real concurrency." `readLog()` inside
+`Code.gs`'s lock rescans the whole `Transactions` tab on every single submission, so its cost
+grows with the day — these checks let you seed that scale before measuring:
+
+  --seed-baseline N   N filler `task` submissions across distinct (team, landmark) pairs, to
+                      bring the live log up to realistic end-of-day size before timing
+                      anything else. Not a correctness check by itself.
+  --mission-burst ID  Every team POSTs `action=mission` for the same mission id in one
+                      simultaneous batch — simulates a broadcast moment. Missions have no
+                      ladder counter, so this isolates raw lock-queueing/quota behaviour from
+                      --concurrent-buy's price-correctness question.
+  --heat-burst N      N teams submit at once, each at a different landmark — simulates a
+                      heat-end burst (heats fire every 15 min).
+
+Pass --stats with any of the above (or --all) to get success / business-rejection / busy
+(lock-timeout, expected and retryable) / hard-error (Apps Script's own concurrent-execution
+quota, or a transport failure — the actual red flag) counts, plus latency percentiles.
+
+Every run that should be cleanly identifiable for cleanup should pass --marker: it prefixes
+every submissionId this run generates, so clearing test rows afterward is an unambiguous
+filter on Transactions!B regardless of which real team numbers got reused.
+
 Does NOT cover: append-first ordering (needs a fault injected between the append and the
 pricing — verify by reading `doPost`, and by confirming Kontrol block 3 surfaces a row whose
 status is left at `pending`), and the 16:29/16:31 deadline pair, which needs the server clock
@@ -37,9 +61,12 @@ Nothing here writes to data/ or the archive.
 """
 
 import argparse
+import collections
 import csv
 import json
+import random
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -59,9 +86,75 @@ TINY_PHOTO = ("data:image/gif;base64,"
               "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7")
 
 
+# Business-logic rejections `handle()`/`price()` can return with a clean `ok: false` --
+# these mean the submission was validated and refused, not that the system failed to answer.
+BUSINESS_ERRORS = {
+    "no_submission_id", "bad_team", "bad_action", "bad_key", "no_photo", "closed",
+    "duplicate", "unknown_item", "price_changed", "insufficient", "bad_outcome", "cooldown",
+}
+
+
+def classify(result):
+    """Bucket a post() result for --stats. 'busy' (lock wait timed out) is expected and
+    retryable under load; 'hard_error' (transport/http/server) is the actual red flag --
+    it is what an Apps Script concurrent-execution quota ceiling would look like."""
+    if result.get("ok") is True:
+        return "ok"
+    err = result.get("error")
+    if err == "busy":
+        return "busy"
+    if err == "response_lost_to_redirect":
+        return "ambiguous"
+    if err in BUSINESS_ERRORS:
+        return "rejected"
+    return "hard_error"
+
+
+class Stats:
+    """Thread-safe counters + latencies, shared across a ThreadPoolExecutor batch."""
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self.counts = collections.Counter()
+        self.latencies = []
+
+    def record(self, category, elapsed):
+        with self._lock:
+            self.counts[category] += 1
+            self.latencies.append(elapsed)
+
+    def report(self, label):
+        total = sum(self.counts.values())
+        print(f"\n--- stats: {label} ({total} requests) ---")
+        if not total:
+            print("  (no requests recorded)")
+            return
+        for cat in ("ok", "rejected", "busy", "hard_error", "ambiguous"):
+            n = self.counts.get(cat, 0)
+            print(f"  {cat:<12} {n:>5}  ({100 * n / total:.1f}%)")
+        lat = sorted(self.latencies)
+
+        def pct(p):
+            return lat[min(len(lat) - 1, int(len(lat) * p))]
+
+        print(f"  latency  p50={pct(0.50):.2f}s  p90={pct(0.90):.2f}s  "
+              f"p99={pct(0.99):.2f}s  max={lat[-1]:.2f}s")
+
+
+STATS = None  # set by --stats; post() records into it when not None
+
+
 def post(url, payload, timeout=60):
     """One submission. text/plain deliberately: it is what the browser sends, because an
     application/json POST triggers a CORS preflight that Apps Script does not answer."""
+    started = time.time()
+    result = _post_raw(url, payload, timeout)
+    if STATS is not None:
+        STATS.record(classify(result), time.time() - started)
+    return result
+
+
+def _post_raw(url, payload, timeout):
     body = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
         url, data=body, method="POST",
@@ -87,10 +180,14 @@ def post(url, payload, timeout=60):
 
 
 TEAM_KEYS = {}  # populated from --keys-csv; empty means every submission fails bad_key
+SUBMISSION_MARKER = ""  # set by --marker; prefixed onto every submissionId this run generates
 
 
 def action(team, act, item, photo=False, **extra):
-    p = {"submissionId": str(uuid.uuid4()), "team": team, "key": TEAM_KEYS.get(team, ""),
+    sid = str(uuid.uuid4())
+    if SUBMISSION_MARKER:
+        sid = f"{SUBMISSION_MARKER}-{sid}"
+    p = {"submissionId": sid, "team": team, "key": TEAM_KEYS.get(team, ""),
          "action": act, "item": item}
     if photo:
         p["photo"] = TINY_PHOTO
@@ -241,6 +338,60 @@ def verdict(passed, good, bad):
     print(f"  {'PASS' if passed else 'FAIL'}: {good if passed else bad}")
 
 
+# ------------------------------------------------------------- throughput / quota checks
+
+def seed_baseline(url, n, photo, landmarks_by_name, teams):
+    """Fire N filler `task` submissions across distinct (team, landmark) pairs, so a later
+    check runs against a log at realistic end-of-day scale rather than an empty one. `task`
+    is used because 21 teams x 51 landmarks gives 1071 distinct pairs -- comfortably above
+    any N worth seeding -- with no risk of hitting the one-task-per-landmark-per-team
+    duplicate rule this early."""
+    print(f"\n=== seeding baseline: {n} filler `task` submissions ===")
+    combos = [(t, name) for t in range(1, teams + 1) for name in landmarks_by_name]
+    random.shuffle(combos)
+    combos = combos[:n]
+    with ThreadPoolExecutor(max_workers=10) as pool:
+        futs = [pool.submit(post, url, action(team, "task", name, photo))
+                for team, name in combos]
+        results = [f.result() for f in futs]
+    ok = sum(1 for r in results if r.get("ok"))
+    print(f"  {ok}/{len(results)} accepted")
+    return results
+
+
+def check_mission_burst(url, mission_id, teams, photo):
+    """Every team POSTs the same mission id at once. Missions carry no ladder counter, so
+    this isolates raw lock-queueing / Apps Script concurrent-execution behaviour from
+    check_concurrent_buy's price-correctness question."""
+    print(f"\n=== mission burst: {teams} teams, mission '{mission_id}', fired together ===")
+    payloads = [action(t, "mission", mission_id, photo) for t in range(1, teams + 1)]
+    with ThreadPoolExecutor(max_workers=teams) as pool:
+        results = list(pool.map(lambda p: post(url, p), payloads))
+    ok = sum(1 for r in results if r.get("ok"))
+    busy = sum(1 for r in results if r.get("error") == "busy")
+    hard = sum(1 for r in results if classify(r) == "hard_error")
+    for team, r in enumerate(results, start=1):
+        print(f"  team {team:>2}  ok={str(r.get('ok')):<5}  "
+              f"{r.get('message') or r.get('error') or ''}")
+    print(f"  ok={ok} busy={busy} hard_error={hard} total={len(results)}")
+    return results
+
+
+def check_heat_burst(url, n, photo, landmarks_by_name, districts):
+    """N teams submit at once, each at a different landmark -- simulates a heat-end
+    moment (heats fire every 15 min) rather than concurrent contention on one landmark."""
+    print(f"\n=== heat burst: {n} teams submitting at once, different landmarks ===")
+    plan = _shopping_plan(n, districts)
+    payloads = [action(team, "buy", names[0], photo) for team, names in plan.items()]
+    with ThreadPoolExecutor(max_workers=n) as pool:
+        results = list(pool.map(lambda p: post(url, p), payloads))
+    ok = sum(1 for r in results if r.get("ok"))
+    busy = sum(1 for r in results if r.get("error") == "busy")
+    hard = sum(1 for r in results if classify(r) == "hard_error")
+    print(f"  ok={ok} busy={busy} hard_error={hard} total={len(results)}")
+    return results
+
+
 # --------------------------------------------------------------------------- main
 
 def main():
@@ -261,7 +412,25 @@ def main():
                     help="attach a 1x1 GIF so the Drive write path is exercised too")
     ap.add_argument("--dry-run", action="store_true",
                     help="print the plan without posting anything")
+    ap.add_argument("--marker", default="",
+                    help="prefix every submissionId this run generates, e.g. LOADT907 -- "
+                    "makes cleanup an unambiguous filter on Transactions!B afterward")
+    ap.add_argument("--seed-baseline", type=int, metavar="N",
+                    help="fire N filler `task` submissions first, to bring the log up to "
+                    "realistic end-of-day scale before timing anything else")
+    ap.add_argument("--mission-burst", metavar="MISSION_ID",
+                    help="every team POSTs this mission id at once")
+    ap.add_argument("--heat-burst", type=int, metavar="N",
+                    help="N teams submit at once, each at a different landmark")
+    ap.add_argument("--stats", action="store_true",
+                    help="report success/rejected/busy/hard_error counts and latency "
+                    "percentiles for every request in this run")
     args = ap.parse_args()
+
+    global SUBMISSION_MARKER, STATS
+    SUBMISSION_MARKER = args.marker
+    if args.stats:
+        STATS = Stats()
 
     if args.keys_csv:
         # Tolerates generate_team_keys.py's raw stdout piped straight to a file: skips its
@@ -288,6 +457,11 @@ def main():
 
     default_lm = "Man Mo Temple"
     results = []
+    ran_throughput_check = False
+    if args.seed_baseline:
+        seed_baseline(args.url, args.seed_baseline, args.with_photo, landmarks_by_name,
+                      args.teams)
+        ran_throughput_check = True
     if args.all or args.concurrent_buy:
         results.append(check_concurrent_buy(
             args.url, args.concurrent_buy or default_lm, args.n, args.with_photo))
@@ -299,9 +473,19 @@ def main():
             args.url, name, landmarks_by_name[name].base_price, args.with_photo))
     if args.all or args.load:
         check_load(args.url, args.teams, args.with_photo, landmarks_by_name, districts)
+    if args.mission_burst:
+        check_mission_burst(args.url, args.mission_burst, args.teams, args.with_photo)
+        ran_throughput_check = True
+    if args.heat_burst:
+        check_heat_burst(args.url, args.heat_burst, args.with_photo, landmarks_by_name,
+                          districts)
+        ran_throughput_check = True
 
-    if not results and not (args.all or args.load):
+    if not results and not (args.all or args.load or ran_throughput_check):
         ap.error("nothing to do - pass --all or one of the checks")
+
+    if STATS is not None:
+        STATS.report("this run")
 
     print("\n" + "=" * 60)
     if results:
