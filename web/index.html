@@ -262,7 +262,10 @@ const CONFIG = {
   // session. Writes get a far longer ceiling -- a 20MB video over mobile data is legitimately
   // slow -- but still a finite one, and a retry is safe because submissionId is idempotent.
   READ_TIMEOUT_MS: 12000,
-  WRITE_TIMEOUT_MS: 120000,
+  // Raised from 120000 2026-09-09 alongside Code.gs's LOCK_WAIT_MS going 60000 -> 90000: keeps
+  // the same 60s margin above the server's own lock-wait ceiling, so this client-side abort
+  // never fires before the server's real busy/ok response would have arrived.
+  WRITE_TIMEOUT_MS: 150000,
   STALE_SHOW_AFTER_MS: 90000,
   STALE_MIN_SHOW_MS: 10000,
   LIVE_FAIL_STREAK: 3,
@@ -995,30 +998,65 @@ function wireFile(){
   };
 }
 
+// A busy response means the server never acquired the lock for this attempt, so nothing was
+// appended -- safe to retry automatically with the same submissionId. These bound how many
+// times and how far apart; MAX_BUSY_RETRIES * BUSY_RETRY_DELAY_MS stays well under
+// CONFIG.WRITE_TIMEOUT_MS so the client's own fetch timeout never cuts a retry sequence short.
+const MAX_BUSY_RETRIES = 3, BUSY_RETRY_DELAY_MS = 3000;
+
 async function submitBuy(){
   if (!pending) return;
   const btn = $("#d-go");
-  // Disabled for the whole round trip. It takes ~3s; without this teams double-tap,
-  // which is exactly what the idempotency key exists to absorb.
+  // One submissionId per attempt, generated once and reused across every automatic and manual
+  // retry below -- a request that actually succeeded server-side but whose response never
+  // reached us must retry as the SAME submission, or idempotency can't catch the replay and
+  // we'd fall back on the slower domain-level duplicate checks (buy/task/mission) instead.
+  // Cleared only on price_changed (see below), where a retry is genuinely a different
+  // transaction at a new price, not a replay of the same one.
+  if (!pending.submissionId){
+    pending.submissionId = crypto.randomUUID ? crypto.randomUUID()
+      : String(Date.now()) + Math.random();
+  }
+  // Disabled for the whole round trip, including any auto-retries below. It takes ~3s;
+  // without this teams double-tap, which is exactly what the idempotency key exists to absorb.
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span>Mengirim…';
+
+  // A mission broadcast lands on every team's screen at the same instant, so any team that
+  // already has a photo ready taps Kirim within the same second -- exactly the worst-case
+  // simultaneous burst the server's lock has to queue behind. Spreading just the FIRST send
+  // across a few seconds takes the edge off that one instant. Not applied to buy: that's a
+  // real race for ladder position, and delaying it would just be an unfair tax on this team.
+  if (pending.kind === "mission" && !pending.jittered){
+    pending.jittered = true;
+    await new Promise(res => setTimeout(res, Math.random() * 5000));
+  }
+
   const payload = {
-    submissionId: (crypto.randomUUID ? crypto.randomUUID()
-      : String(Date.now()) + Math.random()),
+    submissionId: pending.submissionId,
     team: TEAM, key: KEY, action: pending.kind, item: pending.item,
   };
   if (pending.kind === "buy") payload.expectedCost = pending.expectedCost;
   if (photo) payload.photo = photo;
+  let res;
   try{
-    const r = await fetchT(CONFIG.ENDPOINT, CONFIG.WRITE_TIMEOUT_MS, {
-      method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify(payload), redirect:"follow",
-    });
-    const res = await r.json();
+    for (let attempt = 1; ; attempt++){
+      const r = await fetchT(CONFIG.ENDPOINT, CONFIG.WRITE_TIMEOUT_MS, {
+        method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body: JSON.stringify(payload), redirect:"follow",
+      });
+      res = await r.json();
+      if (res.error !== "busy" || attempt >= MAX_BUSY_RETRIES) break;
+      btn.innerHTML = '<span class="spin"></span>Sibuk, mencoba lagi… (' +
+        attempt + '/' + MAX_BUSY_RETRIES + ')';
+      await new Promise(r2 => setTimeout(r2, BUSY_RETRY_DELAY_MS));
+    }
     if (res.error === "price_changed") {
       // Rejected atomically server-side — nothing was charged. Show the new price and
       // require an explicit second tap before spending a single KD more than the team
-      // saw when they hit Kirim.
+      // saw when they hit Kirim. A fresh submissionId: this next tap is a different
+      // transaction at a different price, not a retry of the rejected one.
+      pending.submissionId = null;
       $("#d-res").innerHTML = '<div class="res no">Harga sudah naik jadi ' + res.cost +
         ' KD (tadinya ' + pending.expectedCost + ' KD). Beli sekarang di harga baru?</div>';
       pending.expectedCost = res.cost;
