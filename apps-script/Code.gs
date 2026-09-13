@@ -28,9 +28,15 @@
  * See docs/2026/ledger-system.md for why the layers are split this way.
  */
 
+// Deployment-specific IDs and secrets live in Script Properties, not in source, so this
+// file can be public without exposing the live Spreadsheet/Drive/staff-key values. Set
+// them once under Project Settings > Script Properties before first deploy — see
+// apps-script/README.md's "Script Properties" section for the full list.
+const SCRIPT_PROPS = PropertiesService.getScriptProperties();
+
 const CONFIG = {
-  SPREADSHEET_ID: 'SPREADSHEET_ID_SET_VIA_SCRIPT_PROPERTIES',
-  PHOTO_FOLDER_ID: 'PHOTO_FOLDER_ID_SET_VIA_SCRIPT_PROPERTIES',
+  SPREADSHEET_ID: SCRIPT_PROPS.getProperty('SPREADSHEET_ID'),
+  PHOTO_FOLDER_ID: SCRIPT_PROPS.getProperty('PHOTO_FOLDER_ID'),
   TIMEZONE: 'Asia/Hong_Kong',
   DEADLINE: '2026-09-12T16:30:00+08:00',  // operations.md rundown, retimed 2026-09-12
   ALLOWANCE: 150,                          // economy.md — starting cash per team
@@ -40,8 +46,9 @@ const CONFIG = {
   POST_COOLDOWN_MIN: 15,                   // game-posts.md, added 2026-08-18
   POST_PAYOUT: { win: 40, lose: 20 },
   // Shared secret for the 3 staff-only pos.html stations, in place of a per-team key --
-  // staff witness the heat themselves, so there is no team to spoof. Set before deploy.
-  STAFF_KEY: 'STAFF_KEY_SET_VIA_SCRIPT_PROPERTIES',
+  // staff witness the heat themselves, so there is no team to spoof. Set via Script
+  // Properties before deploy (see the comment above CONFIG).
+  STAFF_KEY: SCRIPT_PROPS.getProperty('STAFF_KEY'),
   OBJECT_PAYOUT: 5,
   TASK_RATE: 0.30,
   MEDIA_MAX_BYTES: 20 * 1024 * 1024,       // mirrors web/index.html's VIDEO_MAX_BYTES

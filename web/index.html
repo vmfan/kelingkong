@@ -206,6 +206,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 
 <script>
 const CONFIG = {
+  // Set to your own deployment's /exec URL (see apps-script/README.md) -- this is a
+  // client-side value; anyone loading this page can already read it, so there is nothing
+  // to hide here once your own deployment is configured.
   ENDPOINT: "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec",
   // Paste Publish-to-web CSV URLs here to take reads off the script. See ledger-system.md:
   // reads and writes are meant to fail independently, and while these are blank they do not.

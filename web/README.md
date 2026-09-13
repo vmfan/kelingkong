@@ -15,11 +15,17 @@ codes. See `docs/2026/operations.md` item 25.
 
 ## Hosting
 
-Live at **<https://vmfan.github.io/kelingkong/index.html>** — GitHub Pages, private repo
-(`vmfan/kelingkong`, GitHub Pro), served from a `gh-pages` branch containing only this
-`web/` folder (Pages' folder picker only offers `/` or `/docs` on `main`, not `/web`, so a
-dedicated branch is the workaround). Verified end-to-end 2026-08-21: all 6 published CSVs
-and the Apps Script `?misi=1` endpoint load with no CORS errors from that origin.
+Was live at `https://vmfan.github.io/kelingkong/index.html` during the event — GitHub
+Pages, served from a `gh-pages` branch containing only this `web/` folder (Pages' folder
+picker only offers `/` or `/docs` on `main`, not `/web`, so a dedicated branch is the
+workaround). At the time the repo was private, which on GitHub requires a paid plan for
+Pages; a public repo needs no such plan. Verified end-to-end 2026-08-21: all 6 published
+CSVs and the Apps Script `?misi=1` endpoint loaded with no CORS errors from that origin.
+
+The page only works against a live Apps Script deployment (see `CONFIG.ENDPOINT` below and
+`apps-script/README.md`) — once that deployment is decommissioned post-event, the hosted
+page still loads but every read/write against it fails, same as any other outage per the
+"staleness banner" behavior described below.
 
 **To redeploy after editing anything under `web/`:** commit on `main`, then run
 
@@ -38,7 +44,7 @@ Local check: `python3 -m http.server 8765` then <http://localhost:8765/index.htm
 
 | Key | Why you would change it |
 |---|---|
-| `ENDPOINT` | The Apps Script `/exec` URL. Already set |
+| `ENDPOINT` | The Apps Script `/exec` URL. Set to your own deployment's — the committed value is a placeholder |
 | `CSV` | Publish-to-web CSV URLs for `harga` / `milik` / `tim` / `klasemen` / `aktivitas` / `objek`. All six are filled in as of 2026-09-01. If one is ever blanked, that tab degrades (no completion state for `aktivitas`; `CONFIG.OBJECTS` for `objek`) rather than breaking |
 | `BACKUP_FORM` | Set this and every action button redirects to the backup Form instead. The mid-event failover — one edit, no redeploy |
 | `SHOW_KLASEMEN` | Default `false`. Hides the ranked-standings tab from participants — a visible gap between teams risks over-competitiveness or pessimism/complacency. Data still polls in the background; flip to `true` to bring the tab back, no other change needed |

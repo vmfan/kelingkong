@@ -1,2 +1,8 @@
 __pycache__/
 *.pyc
+
+# Live per-event secrets and generated artifacts that must never be public.
+scripts/team-keys.csv
+print/
+docs/cv-bullets.md
+apps-script/.clasp.json

@@ -51,8 +51,8 @@ all passed.
 | Editor | <https://script.google.com/d/<script-id>/edit> |
 | Deploying account | `deploy-account-c@example.com` (since 2026-09-11) |
 | GCP project | `<gcp-project-number>` (owned by deploy-account-c@example.com) |
-| Deployment | `YOUR_DEPLOYMENT_ID` (@27) |
-| `/exec` | `https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec` |
+| Deployment | `<deployment-id>` (@27) |
+| `/exec` | `https://script.google.com/macros/s/<deployment-id>/exec` |
 
 **One-time authorization is required before the endpoint answers.** `clasp login` grants
 clasp's scopes, not the script project's. A web app deployed `executeAs: USER_DEPLOYING`
@@ -107,6 +107,19 @@ Two prerequisites, both one-off and both easy to forget:
    spreadsheet and the photo folder. The web app runs as the deployer (`USER_DEPLOYING`),
    so if those were created under a different Google account, every submission fails at
    `openById` with a permission error rather than anything descriptive.
+3. **Set Script Properties before the first deploy.** `Code.gs`'s `CONFIG` reads its live
+   IDs and secret out of `PropertiesService.getScriptProperties()` rather than hardcoding
+   them, so the source can be public. In the Apps Script editor, go to Project Settings >
+   Script Properties and add:
+
+   | Property | Value |
+   |---|---|
+   | `SPREADSHEET_ID` | the ledger Spreadsheet's ID |
+   | `PHOTO_FOLDER_ID` | the Drive folder ID for photo/video uploads |
+   | `STAFF_KEY` | a random string (e.g. `python3 -c "import secrets; print(secrets.token_urlsafe(24))"`) — the shared secret for the 3 staff `pos.html` stations |
+
+   Missing any of these makes the corresponding `CONFIG` value `null` at runtime rather
+   than failing at deploy time, so double-check all three are set before testing.
 
 ```
 clasp login                                     # interactive; sign in as deploy-account-a@example.com
