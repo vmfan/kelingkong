@@ -22,7 +22,7 @@ the direct fix for a day that felt rushed.
 
 ## How pacing is enforced
 
-Everything is derived from one number: **a team should own 5–6 landmarks by 16:45.**
+Everything is derived from one number: **a team should own 5–6 landmarks by 16:30.**
 
 About 4h10m of the day is live exploration once assembly, lunch and closing are
 subtracted (confirmed against venue times 2026-09-04 — see `operations.md`; down slightly

@@ -19,12 +19,39 @@ had added to `Transactions!K` was silently rejecting every status write. That ru
 removed — column K is the script's to write, per "Column M is not the script's" below re:
 what operators vs. the script own.)
 
+**Migrated again 2026-09-09**, this time deliberately, to `deploy-account-b@example.com` — a
+dedicated account created specifically to absorb photo/video storage, not a personal Gmail,
+so the reasoning above for reverting the 2026-08-22 move does not apply here. `SPREADSHEET_ID`
+and `PHOTO_FOLDER_ID` were left unchanged; only the deploying identity moved, so future
+`savePhoto()` uploads are now created by (and billed to) the new account while existing files
+keep their original owner. Sharing on the Spreadsheet, the photo folder, and a protected
+range on `Transactions` all had to be extended to the new account before writes worked — the
+protected-range block was not covered by file-level sharing and is not mentioned anywhere
+else in this doc, worth remembering next time. Verified via
+`scripts/seed_transactions.py --with-photo` (lock, idempotency, and Drive upload all passed)
+before redeploying the existing deployment ID under the new account, then re-confirmed
+against the live `/exec` URL after redeploying.
+
+**Migrated a third time 2026-09-11** (the day before the event) after access to
+`deploy-account-b@example.com` was lost outright — its cached local `clasp` credential came
+back `invalid_grant`, confirming it wasn't just a browser-login problem. Deployed to
+`deploy-account-c@example.com` with its own new GCP project, rather than reverting to
+`deploy-account-a@example.com`, on the reasoning that riding on either previously-troubled account
+again wasn't worth it with one day left. **Learn from now having lost account access twice:
+make sure whoever holds the deploying account credential going forward keeps it recoverable
+(password manager + backup 2FA), and keep at least one other trusted account as a standing
+editor on the script so a future migration doesn't again depend on account recovery.** Same
+verification approach as 2026-09-09 — `--with-photo` concurrent-buy and idempotency checks
+against a throwaway deployment first, then one more against the live URL after redeploying —
+all passed.
+
 | | |
 |---|---|
 | Script | `<script-id>` |
 | Editor | <https://script.google.com/d/<script-id>/edit> |
-| GCP project | `<gcp-project-number>` (owned by deploy-account-a@example.com — pre-existing, reused rather than creating a new one) |
-| Deployment | `YOUR_DEPLOYMENT_ID` (@17) |
+| Deploying account | `deploy-account-c@example.com` (since 2026-09-11) |
+| GCP project | `<gcp-project-number>` (owned by deploy-account-c@example.com) |
+| Deployment | `YOUR_DEPLOYMENT_ID` (@27) |
 | `/exec` | `https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec` |
 
 **One-time authorization is required before the endpoint answers.** `clasp login` grants
@@ -66,9 +93,10 @@ a different project.
 
 ## Deploy
 
-Requires clasp v3 (`npm i -g @google/clasp`). Deploying account: **deploy-account-a@example.com**
-(password rotated and 2FA enabled 2026-08-22 — keep the credential limited to whoever actually
-needs to redeploy, not the whole committee).
+Requires clasp v3 (`npm i -g @google/clasp`). Deploying account: **deploy-account-c@example.com**
+(migrated 2026-09-11 after access to the prior deploying account, deploy-account-b@example.com,
+was lost outright — see "Live IDs" above; keep the credential limited to whoever actually
+needs to redeploy, not the whole committee, and make sure it's recoverable).
 
 Two prerequisites, both one-off and both easy to forget:
 

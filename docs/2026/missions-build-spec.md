@@ -72,11 +72,12 @@ action per mission.
 ## Broadcast schedule
 
 **Decided 2026-08-20, revised same day, revised again 2026-08-31 (five missions → four),
-revised again 2026-09-04 (confirmed venue times).**
+revised again 2026-09-04 (confirmed venue times), revised again 2026-09-12 (same-day
+15-minute retime).**
 *When* the missions fire, independent of what
 they say (mission text and `penalty_kd` stay open — see "What's still open" below). Built
 against `operations.md`'s rundown: dispersal 11:05, first heats 11:30, heats paused
-12:30–13:45 for lunch, lunch ~12:00–13:30, last heats 16:30, Form close 16:45.
+12:30–13:45 for lunch, lunch ~12:00–13:30, last heats 16:15, Form close 16:30.
 
 ### The post-heat clash, and why two changes together fix it
 
@@ -121,12 +122,21 @@ for lunch, last heat 16:30, Form close 16:45), replacing the placeholder times t
 built against. Re-derived below using the same method as the 2026-08-31 revision — nothing
 about the method changed, only the inputs.
 
+**Revised again 2026-09-12 — same-day 15-minute retime, M4 kept in place.**
+`operations.md`'s rundown moved last-heats/Form-close/closing 15 minutes earlier (last heat
+16:15, Form close 16:30). Only M4 depends on those two inputs; M1–M3 are unaffected. Sliding M4
+15 minutes earlier too would have preserved its original 26/41-minute buffers but broken the
+even 60-minute afternoon spacing (M3→M4 would drop to 45 min). **Chosen instead: leave M4 at
+15:44/16:04 unchanged**, keeping the 60-minute spacing intact at the cost of a tighter buffer —
+11 minutes clear of last-heat-start (was 26) and 26 minutes clear of Form close (was 41). Still
+positive margin on both, just less slack than before.
+
 | Mission | `issued_at` | `deadline` (20 min) | Rationale |
 |---|---|---|---|
 | M1 | 11:29 | 11:49 | ~24 min after the 11:05 dispersal, 1 min before the **first** heat of the day (11:30) — since no heat has fired yet, every team gets the full 20-minute window with zero heat-clash risk. 11 min clear of lunch (`11:49 ≤ 12:00`) |
 | M2 | 13:44 | 14:04 | Unchanged from the 2026-08-31 schedule. Earliest slot on this offset that's fully clear of lunch (`issued_at ≥ 13:30`) — and, with heats now paused until 13:45, also fires 1 min before heats *resume* rather than mid-cycle, the same zero-clash property as M1 |
 | M3 | 14:44 | 15:04 | +60 min |
-| M4 | 15:44 | 16:04 | +60 min — even spacing with M3. Deadline is 26 minutes clear of the 16:30 last heat (matching the 2026-08-31 schedule's own 26-minute buffer to its last-heats time) and 41 minutes clear of the 16:45 Form close |
+| M4 | 15:44 | 16:04 | +60 min, unchanged since the 2026-09-04 revision — kept in place on 2026-09-12 to preserve even spacing with M3. Deadline is now 11 minutes clear of the 16:15 last heat and 26 minutes clear of the 16:30 Form close (down from 26/41 before the retime, but still positive margin) |
 
 Constraints that produced these times, so a future reader can re-derive them if the rundown
 shifts again (`operations.md` open item 1 — closed 2026-09-04, but the method still applies if
@@ -143,13 +153,13 @@ venue times ever change):
   so the nearest safe `:14/:29/:44/:59` slot that still clears lunch gives a slightly tighter
   ~24-minute buffer instead — still comfortably above the 18.6-minute worst-case ETA among the
   8 starting districts (`operations.md`, "Starting district assignment").
-- **Afternoon missions evenly spaced at 60 minutes**, not 45. The later Form close (16:45) and
-  later last-heats time (16:30) open up more safe afternoon room than the 2026-08-31 schedule
-  had; filling that range end to end per the same "don't cluster" principle now yields 60-minute
-  gaps (13:44 / 14:44 / 15:44) instead of 45.
-- **Nothing after ~15:44.** `deadline` (16:04) leaves 41 minutes of clear runway before the
-  16:45 Form close and finishes 26 minutes before the 16:30 last heat, so a team that misses
-  this one at the buzzer still has time to travel and submit before the Form closes.
+- **Afternoon missions evenly spaced at 60 minutes**, not 45. Filling the range end to end per
+  the "don't cluster" principle yields 60-minute gaps (13:44 / 14:44 / 15:44). This constraint
+  won out over tightening M4's end-of-day buffer in the 2026-09-12 retime — see above.
+- **Nothing after ~15:44.** `deadline` (16:04) leaves 26 minutes of clear runway before the
+  16:30 Form close and finishes 11 minutes before the 16:15 last heat (down from 41/26 before
+  the 2026-09-12 retime, since M4 itself didn't move while last-heats/Form-close did), so a team
+  that misses this one at the buzzer still has time to travel and submit before the Form closes.
 - **Times land on `:14`/`:29`/`:44`/`:59`** — one minute *before* the next heat's
   quarter-hour start, not just after it. See "The post-heat clash" above for why this phase
   (biased toward the end of the heat cycle) beats the originally-considered `:05`/`:20`/`:35`/

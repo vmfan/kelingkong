@@ -3,6 +3,8 @@
 ## Rundown
 
 **Confirmed against venue availability 2026-09-04** — see item 1, closed below.
+**Last-heats-through-closing retimed 15 minutes earlier, same-day, 2026-09-12** — see the note
+below the table.
 
 | Time | What |
 |---|---|
@@ -13,15 +15,24 @@
 | 11:30–12:30 | Heats run every 15 min |
 | ~12:00–13:30 | Lunch, taken wherever teams happen to be — **heats paused within this window** (new for 2026; 2025's heats ran straight through lunch) |
 | 13:45 | Heats resume |
-| 16:30 | Last heats (run until 16:45) |
-| **16:45** | **Submission deadline — Form closes** |
-| 16:45–17:15 | Regroup, standings finalised |
-| 17:15 | Closing and results |
+| 16:15 | Last heats (run until 16:30) |
+| **16:30** | **Submission deadline — Form closes** |
+| 16:30–17:00 | Regroup, standings finalised |
+| 17:00 | Closing and results |
 
-Live exploration is roughly 11:05–16:45 minus lunch ≈ **4h10m** (down from the 4.5h the
-pacing model was built against — a ~7% compression from the confirmed venue times, 2026-09-04).
-If the schedule compresses, the 6-landmark target and the prices derived from it need
-revisiting — see `economy.md`, and open item 27 below.
+**2026-09-12 same-day retime:** last-heats, the submission deadline, regroup, and closing all
+moved 15 minutes earlier (were 16:30/16:45/16:45–17:15/17:15), keeping the deadline flush
+against last-heat-end per the 2026-09-04 design. Everything from committee call-time through
+heats-resume is unchanged. Knock-on: mission M4 re-derived in `missions-build-spec.md` to keep
+its buffers to last-heats/Form-close (now `issued_at` 15:29, `deadline` 15:49). The live
+`Missions` sheet tab and the deployed Apps Script `/exec` (`CONFIG.DEADLINE` and its Indonesian
+error string) still need this pushed manually — a repo edit alone doesn't move the real
+deadline; same caveat tracked in item 24 below.
+
+Live exploration is roughly 11:05–16:30 minus lunch ≈ **3h55m** (down from the 4.5h the
+pacing model was built against — a further compression from the 2026-09-04 confirmed venue
+times, itself already a ~7% cut). If the schedule compresses, the 6-landmark target and the
+prices derived from it need revisiting — see `economy.md`, and open item 27 below.
 
 Base and regroup point in 2025 was BNI Admiralty; all travel times in
 `../../data/landmarks.csv` are measured from there.
@@ -308,7 +319,7 @@ Ordered by deadline.
 | 21 | **Watch the farm-and-leave gap at Kai Tak** | Ongoing, from event day 1 | Simulation found that visiting Kai Tak, doing all 4 tasks, and buying nothing already outscores the taught ×1.8 near-crossing build even before item 20's boost (240 vs. 180), and the boost widens it further (→280). No mechanical fix was adopted — see `economy.md` calibration log, 2026-08-19 decision entries, and `simulated-playtest.md`'s "Farm-and-leave, quantified" section. Unlike item 19, this is not bounded by an existing cap; if it's visibly happening on the day, it needs a same-day call, not a wait-and-see |
 | 22 | **Brief the bankers on the verification queue** | Week 3 | Added 2026-08-19 with photo review. They need: how to read `Kontrol` block 7, what a good photo looks like (whole team, at the landmark), that ticking `diperiksa` only marks it seen, and that voiding is done by typing `void` into `Transactions!K`. Also that a void is visible to the team immediately — so tell the team's leader, don't let them discover it on the board |
 | 23 | **Publish the `objek` CSV tab and paste the URL into `web/index.html`'s `CONFIG.CSV.objek`** | Week 3 | Added 2026-08-20 with surprise missions. Seeded with 2025's 7 objects at 5 KD each; until published the page falls back to its hardcoded `CONFIG.OBJECTS` list, which already matches |
-| 24 | **Apply the widened mission window and retimed broadcast schedule to the live Sheet** | Week 3, before printing | **Narrowed 2026-09-07 — `Missions` tab confirmed live-correct, `CONFIG.DEADLINE` redeploy still unconfirmed.** Read live via Sheets API 2026-09-07: `Missions!C2:C5` already holds `M1`–`M4` = 11:29 / 13:44 / 14:44 / 15:44 (all 2026-09-12), matching the re-derived schedule (`missions-build-spec.md`, "Broadcast schedule"; `economy.md`, 2026-09-04 calibration log entry) — the tab was fixed since this item was last written; that earlier "still holds the 2026-08-31 values" note was itself stale. **Remaining scope, narrowed to just this:** confirm the *deployed* Apps Script has `Code.gs`'s `CONFIG.DEADLINE = '2026-09-12T16:45:00+08:00'` — the value is correct in this repo, but Sheets API access can't see Apps Script code, only the spreadsheet, so whether that value has actually been pushed to the live `/exec` deployment is unverified. Check in the Apps Script editor and redeploy (**Deploy ▸ Manage deployments ▸ Edit ▸ New version**, same `/exec` URL — do not create a new deployment) if it hasn't been. |
+| 24 | **Apply the widened mission window and retimed broadcast schedule to the live Sheet** | Week 3, before printing | **Reopened 2026-09-12 — `CONFIG.DEADLINE` redeploy needed, `Missions` tab unaffected.** As of 2026-09-07 the `Missions` tab held `M1`–`M4` = 11:29 / 13:44 / 14:44 / 15:44, matching the schedule that was live at the time. The 2026-09-12 same-day 15-minute retime (see the Rundown section and `economy.md`'s 2026-09-12 calibration log entry) left M4 unchanged at 15:44/16:04 to preserve the 60-minute even afternoon spacing, so **the `Missions` tab needs no change**. **Remaining scope:** confirm the *deployed* Apps Script has `Code.gs`'s new `CONFIG.DEADLINE = '2026-09-12T16:30:00+08:00'` and the updated Indonesian deadline-message string — the repo values are correct, but Sheets API access can't see Apps Script code, only the spreadsheet, so whether either has been pushed to the live `/exec` deployment is unverified. Check in the Apps Script editor and redeploy (**Deploy ▸ Manage deployments ▸ Edit ▸ New version**, same `/exec` URL — do not create a new deployment). |
 | 25 | **Stop team-spoofed submissions** | Week 3, before printing | Added 2026-08-31, **closed 2026-09-01**. `team` was previously a self-asserted number with nothing checking it — anyone reading the endpoint URL out of the page source could POST as any team. `Code.gs` now rejects any submission whose `key` doesn't match that team's row in `TeamKeys` (see "The ledger" above), checked before `Transactions` is touched. `TeamKeys` is populated (21 rows, matching item 26) and deployed live; verified end-to-end — wrong key, missing key and cross-team key reuse all rejected before any Sheet write. QR images generated (see item 10) |
 | 26 | **Finalize the team count everywhere "25" is assumed** | Before Aug 31 printing window | Added 2026-08-31, **closed 2026-09-01 — fixed at 21 teams of 10**, matching 2025's actual count rather than growing to the 25 originally targeted (`concept.md`). All three groups resolved: (1) **Mechanical:** `Code.gs`'s `CONFIG.TEAMS` set to 21 and redeployed live; `TeamKeys` trimmed to 21 rows (teams 22–25 removed); `--teams` defaults on `generate_team_keys.py`/`seed_transactions.py` updated to 21; `web/index.html`'s prompt fallback updated to "(1-21)?". Verified live: team 22 now rejected `bad_team`, team 21 still submits normally. (2) **Judgement call — re-ran the simulation, no repricing needed:** set `simulate_playtest.py`'s `TEAMS = 21` and re-ran `--compare-crossing --runs 200 --seed 42` against the same board this repo ships. The far/near gap **widened slightly, not narrowed**, at 21 vs. 25 teams (dwell20/25: 49.9→53.0; dwell35: 58.1→60.4 — a ~6–10% shift, same direction as before). Fewer teams means less price-ladder contention, which if anything makes far-crossing marginally more attainable, not less — item 11's 0.45 compression ratio is not invalidated by the count change and stays as applied. Full context in `economy.md`'s calibration log, 2026-09-01 entry. (3) **Prose:** `concept.md` and this file's People table and round-robin section updated to 21/210/~42. `economy.md`'s dated calibration-log entries (historical record of decisions made under the 25-team assumption at the time) are deliberately left as-is; only forward-looking/current-state text was updated |
 | 27 | **Re-validate the pacing model against the confirmed venue times** | Before printing | Added 2026-09-04 with item 1's closure. Live exploration drops from the assumed 4.5h to ~4h10m (~7% compression) — the Rundown section's own standing warning is that a compressed schedule means "the 6-landmark target and the prices derived from it need revisiting." `simulated-playtest.md`'s Monte Carlo run was built on a 270-minute budget and is now stale; rerun `scripts/simulate_playtest.py` with the new budget before trusting its far/near-gap findings for any further pricing decision. Not attempted as part of this retime — judgement call for the committee, same as item 7 |

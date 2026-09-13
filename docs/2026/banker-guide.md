@@ -68,6 +68,24 @@ impossible travel between two consecutive submissions. None of these need action
 beyond flagging to committee/floaters — `Kontrol` is empty when everything's fine, so
 anything showing there is worth a look.
 
+## If the write layer fails over to the backup Form
+
+If `Code.gs` goes down mid-event, the participant page redirects every action button straight
+to a backup Google Form instead. That Form is a dumb append-only record — it does not price,
+score, or touch `Transactions` at all, so **those submissions will not appear in your `Kontrol`
+queue** until a committee member has manually reconciled each Form response into `Transactions`
+(reconstructing the price/ladder slot it would have gotten live).
+
+What this means for you:
+
+- A quiet queue during an outage doesn't mean nothing happened — it means nothing has been
+  reconciled yet. Don't assume the event has gone quiet.
+- Once reconciliation catches up, expect a **batch** of backdated rows to land in block 7 at
+  once, not a steady trickle. Budget review time accordingly rather than being surprised by
+  a sudden backlog.
+- Review itself doesn't change — reconciled rows go through the same photo/video check and the
+  same `void`/`diperiksa` mechanism as any live submission. The only difference is timing.
+
 ## When in doubt
 
 If a photo or video is ambiguous, or you're unsure whether to void, don't guess — flag it to

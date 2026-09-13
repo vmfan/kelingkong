@@ -70,7 +70,7 @@ collapses both into a single failure, and reads are what 250 people depend on co
    design walks 25 teams into a login wall at 11:30 — and into an outside-the-organisation
    wall too, if the Sheet lives in a Workspace account. This alone decided it.
 2. **Write-time validation** a Form cannot do: reject an unaffordable purchase, a duplicate
-   buy, a post-16:45 submission, an unknown landmark, a `game-posts.md` cooldown violation.
+   buy, a post-16:30 submission, an unknown landmark, a `game-posts.md` cooldown violation.
 3. **The team learns what it paid immediately** rather than waiting for the board to refresh.
 4. **Client-side photo downscale** to ~200 KB instead of a 4 MB original. Across ~550
    submissions that is ~3 GB → ~150 MB, which matters for mobile data and for the free
